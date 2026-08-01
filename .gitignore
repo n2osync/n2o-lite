@@ -1,0 +1,25 @@
+# Build output
+main.js
+*.js.map
+styles.css
+
+# Dependencies
+node_modules/
+
+# WASM binaries (embedded at build time)
+*.wasm
+
+# esbuild bundle metafile
+meta.json
+
+# Obsidian plugin data (contains user tokens)
+data.json
+
+# Coverage
+coverage/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

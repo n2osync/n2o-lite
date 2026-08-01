@@ -1,0 +1,171 @@
+/* ── Confirm dialogs (Overwrite, and the shared button row) ───────── */
+
+/* Shared: right-align dialog buttons with breathing room. Applies to every
+   N2O confirm modal (overwrite, reset, delete, push) that uses this row. */
+.n2o-modal-button-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.n2o-modal-button-row button {
+  padding: 7px 16px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+/* Shared confirm dialog (ConfirmModal + renderConfirm): warning icon + title,
+   lead line, optional body (lists/notes), left-accented warning callout.
+   Spacious + clearly a deliberate action. One look for every confirm prompt. */
+.n2o-confirm {
+  padding: 4px 2px 2px;
+}
+
+.n2o-confirm-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.n2o-confirm-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-warning, #d99a30);
+}
+
+.n2o-confirm-icon.is-destructive {
+  color: var(--text-error, #e0506a);
+}
+
+.n2o-confirm-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.n2o-confirm h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.n2o-confirm-lead {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-normal);
+}
+
+/* Custom body: bullet lists ("will be cleared"), file lists, notes. */
+.n2o-confirm-body {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.n2o-confirm-body ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.n2o-confirm-body li {
+  margin: 2px 0;
+}
+
+.n2o-confirm-body strong {
+  color: var(--text-normal);
+}
+
+.n2o-confirm-warn {
+  margin: 0;
+  padding: 11px 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--text-error) 9%, transparent);
+  border-left: 3px solid var(--text-error);
+  border-radius: 6px;
+}
+
+.n2o-confirm-warn strong {
+  color: var(--text-normal);
+}
+
+/* ── Parent picker (where new pages go in Notion) ─────────────────── */
+.n2o-parent-picker h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.n2o-parent-picker-lead {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.n2o-parent-picker-search {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.n2o-parent-picker-list {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+}
+
+.n2o-parent-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.n2o-parent-picker-row:last-child {
+  border-bottom: none;
+}
+
+.n2o-parent-picker-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-parent-picker-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.n2o-parent-picker-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.n2o-parent-picker-title {
+  font-size: 14px;
+  color: var(--text-normal);
+}
+
+.n2o-parent-picker-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Token input width (moved off an inline style, #1543). */
+.n2o-notionify-token-input {
+  width: 300px;
+}

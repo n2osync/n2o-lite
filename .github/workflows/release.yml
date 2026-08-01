@@ -1,0 +1,73 @@
+name: Release
+
+# Builds the plugin on every version tag and attaches the three files the Obsidian
+# community store installs. The tag must exactly match the version in manifest.json
+# (no v prefix). Runs the full gate first, so a tag never ships a broken build.
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+  # Required by actions/attest-build-provenance to sign and record provenance
+  # for the released assets so users can verify they were built from this source.
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify tag matches manifest version
+        run: |
+          MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+          if [ "$MANIFEST_VERSION" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match manifest version ${MANIFEST_VERSION}"
+            exit 1
+          fi
+
+      - name: Gate (typecheck, lint, layers, circular, build, network purity)
+        run: npm run preflight
+
+      - name: Generate artifact attestations
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Idempotent: create the release if it does not exist yet, otherwise
+          # replace its assets. A re-tag or a re-run must update, never fail on
+          # "release already exists".
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" \
+              main.js manifest.json styles.css --clobber
+          elif [ -f RELEASE_NOTES.md ]; then
+            # A release that changes behaviour needs more than one generated
+            # line: this text is what everyone who updates actually reads.
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "${GITHUB_REF_NAME}" \
+              --notes-file RELEASE_NOTES.md \
+              main.js manifest.json styles.css
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "${GITHUB_REF_NAME}" \
+              --notes "N2O Lite ${GITHUB_REF_NAME}. Built from source in CI." \
+              main.js manifest.json styles.css
+          fi

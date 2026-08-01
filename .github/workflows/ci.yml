@@ -1,0 +1,25 @@
+name: CI
+
+# Runs the full gate on every push to main and every pull request, so a broken
+# build never reaches a tag. Same gate the release workflow runs before shipping.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Gate (typecheck, lint, layers, circular, build, network purity)
+        run: npm run preflight

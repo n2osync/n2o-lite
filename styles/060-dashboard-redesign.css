@@ -1,0 +1,2958 @@
+/* ── Dashboard redesign — Phase 1 ──────────────────────────────────
+ * Tokens (warm neutral + amber accent) scoped to .n2o-dashboard so the
+ * rest of Obsidian is untouched. Dark-mode via body.theme-dark. New
+ * scope-card shape + accent-button polish + tier-badge refresh.
+ */
+
+/* N2O tokens — fully theme-respecting. All colors map to the user's active
+ * Obsidian theme variables. No N2O-specific hardcoded colors. */
+.n2o-dashboard {
+  --n2o-bg:          var(--background-primary);
+  --n2o-panel:       var(--background-secondary);
+  --n2o-line:        var(--background-modifier-border);
+  --n2o-line-soft:   var(--background-modifier-border-hover, var(--background-modifier-border));
+  --n2o-ink:         var(--text-normal);
+  --n2o-mid:         var(--text-muted);
+  --n2o-soft:        var(--text-muted);
+  --n2o-faint:       var(--text-faint);
+  --n2o-accent:      var(--interactive-accent);
+  --n2o-accent-hi:   var(--interactive-accent-hover, var(--interactive-accent));
+  --n2o-accent-soft: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+  --n2o-accent-ink:  var(--interactive-accent);
+  --n2o-on-accent:   var(--text-on-accent);
+  --n2o-ok:          var(--text-success, var(--color-green));
+  --n2o-ok-soft:     color-mix(in srgb, var(--text-success, var(--color-green)) 15%, transparent);
+  --n2o-warn:        var(--text-warning, var(--color-yellow));
+  --n2o-err:         var(--text-error, var(--color-red));
+  --n2o-font-mono:   var(--font-monospace, "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace);
+}
+
+/* All colors inherit from the active Obsidian theme. No dark-mode override needed. */
+
+/* Hero: tighten spacing + soft separator */
+.n2o-dashboard .n2o-dash-hero {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--n2o-line-soft);
+  margin-bottom: 14px;
+}
+
+.n2o-dashboard .n2o-dash-header {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.n2o-dashboard .n2o-dash-status-text {
+  color: var(--n2o-ink);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+/* Tier badge: softer visual weight + amber Pro */
+.n2o-dashboard .n2o-dash-badge--pro {
+  background: var(--n2o-accent-soft);
+  color: var(--n2o-accent-ink);
+}
+
+.n2o-dashboard .n2o-dash-badge--expired {
+  background: var(--n2o-panel);
+  color: var(--n2o-soft);
+  border: 1px solid var(--n2o-line);
+}/* Scope card: bordered block with folder icon + path + Edit + stats */
+.n2o-dashboard .n2o-dash-scope-card {
+  margin-top: 10px;
+  background: var(--n2o-panel);
+  border: 1px solid var(--n2o-line);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.n2o-dashboard .n2o-dash-scope-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-scope-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--n2o-soft);
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-scope-icon .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.n2o-dashboard .n2o-dash-scope-path {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--n2o-font-mono);
+  font-size: 11.5px;
+  color: var(--n2o-mid);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dashboard .n2o-dash-scope-edit {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--n2o-accent);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-scope-edit:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--n2o-accent);
+}
+
+.n2o-dashboard .n2o-dash-scope-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--n2o-soft);
+}
+
+.n2o-dashboard .n2o-dash-scope-stat b {
+  font-family: var(--n2o-font-mono);
+  font-weight: 600;
+  color: var(--n2o-ink);
+  margin-right: 3px;
+}
+
+/* Primary CTA (Sync / Connect / Run first sync) — uses theme accent. */
+.n2o-dashboard .n2o-dash-btn-primary.mod-cta {
+  background: var(--n2o-accent);
+  color: var(--n2o-on-accent);
+  border: 1px solid var(--n2o-accent);
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.n2o-dashboard .n2o-dash-btn-primary.mod-cta:hover:not(:disabled) {
+  background: var(--n2o-accent-hi);
+  border-color: var(--n2o-accent-hi);
+  opacity: 1;
+}
+
+.n2o-dashboard .n2o-dash-btn-secondary {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: var(--n2o-panel);
+  color: var(--n2o-ink);
+  border: 1px solid var(--n2o-line);
+  border-radius: 6px;
+}
+
+.n2o-dashboard .n2o-dash-btn-secondary:hover:not(:disabled) {
+  background: var(--n2o-line-soft);
+  border-color: var(--n2o-line);
+}
+
+.n2o-dashboard .n2o-dash-action-trio {
+  gap: 6px;
+  margin-top: 0;
+}
+
+/* Scope mode sub-line (shown when never-synced instead of stats) */
+.n2o-dashboard .n2o-dash-scope-mode {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--n2o-soft);
+}
+
+/* ─── State 1: Not Connected (V3 typographic hero) ─────────────── */
+
+.n2o-dashboard .n2o-dash-notconn {
+  padding: 20px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.n2o-dashboard .n2o-dash-notconn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--n2o-line);
+  border-radius: 999px;
+  font-family: var(--n2o-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--n2o-soft);
+  align-self: flex-start;
+  margin-bottom: 18px;
+}
+
+.n2o-dashboard .n2o-dash-notconn-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--n2o-faint);
+}
+
+/* State-aware pill variants — dot colour + label colour change per
+   step so the same pill reads naturally at "Not connected" (muted),
+   "Connecting…" (amber, pulsing), and "Connected" (green). */
+.n2o-dashboard .n2o-dash-notconn-pill.is-oauth-waiting {
+  color: var(--n2o-accent);
+  border-color: color-mix(in srgb, var(--n2o-accent) 40%, transparent);
+}
+.n2o-dashboard .n2o-dash-notconn-pill.is-oauth-waiting .n2o-dash-notconn-pill-dot {
+  background: var(--n2o-accent);
+  animation: n2o-pulse-dot 1.4s ease-in-out infinite;
+}
+.n2o-dashboard .n2o-dash-notconn-pill.is-success {
+  color: var(--n2o-ok);
+  border-color: color-mix(in srgb, var(--n2o-ok) 40%, transparent);
+}
+.n2o-dashboard .n2o-dash-notconn-pill.is-success .n2o-dash-notconn-pill-dot {
+  background: var(--n2o-ok);
+}
+
+.n2o-dashboard .n2o-dash-display-title {
+  font-family: Fraunces, Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+  color: var(--n2o-ink);
+  margin-bottom: 12px;
+}
+
+/*
+ * Waiting state title gets a touch more top padding so the page
+ * doesn't feel cramped now that the marketing surface (what-you-
+ * get card, free-tier note) is hidden during oauth-waiting.
+ */
+.n2o-dashboard .n2o-dash-waiting-title {
+  margin-top: 20px;
+}
+
+.n2o-dashboard .n2o-dash-display-accent {
+  color: var(--n2o-accent);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.n2o-dashboard .n2o-dash-notconn-body {
+  font-size: 13px;
+  color: var(--n2o-mid);
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.n2o-dashboard .n2o-dash-notconn-cta {
+  width: 100%;
+  height: 34px;
+  border-radius: 7px;
+  margin-top: 4px;
+}
+
+.n2o-dashboard .n2o-dash-notconn-ghost {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.n2o-dashboard .n2o-dash-notconn-ghost a {
+  font-size: 11.5px;
+  color: var(--n2o-soft);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.n2o-dashboard .n2o-dash-notconn-ghost a:hover {
+  color: var(--n2o-accent);
+  text-decoration: underline;
+}
+
+/* WHAT YOU GET card */
+.n2o-dashboard .n2o-dash-whatyouget {
+  margin-top: 20px;
+  padding: 18px;
+  background: var(--n2o-panel);
+  border: 1px solid var(--n2o-line);
+  border-radius: 12px;
+}
+
+.n2o-dashboard .n2o-dash-whatyouget-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--n2o-soft);
+  margin-bottom: 12px;
+}
+
+.n2o-dashboard .n2o-dash-feat-row {
+  display: flex;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--n2o-line-soft);
+}
+
+.n2o-dashboard .n2o-dash-feat-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.n2o-dashboard .n2o-dash-feat-row:first-child {
+  padding-top: 0;
+}
+
+.n2o-dashboard .n2o-dash-feat-num {
+  font-family: var(--n2o-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--n2o-accent);
+  letter-spacing: 0.5px;
+  padding-top: 1px;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-feat-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-feat-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--n2o-ink);
+  margin-bottom: 2px;
+}
+
+.n2o-dashboard .n2o-dash-feat-sub {
+  font-size: 11.5px;
+  color: var(--n2o-soft);
+  line-height: 1.45;
+}
+
+.n2o-dashboard .n2o-dash-notconn-footer {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-top: 1px solid var(--n2o-line-soft);
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: var(--n2o-soft);
+}
+
+.n2o-dashboard .n2o-dash-notconn-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.n2o-dashboard .n2o-dash-notconn-info .svg-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--n2o-soft);
+}
+
+/* ─── Tank gauge (shared V1/V4) ───────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-tank-gauge {
+  display: block;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-tank-gauge-ring {
+  transition: stroke-dashoffset 800ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Fill-shimmer during sync: ring breathes on opacity in a 2.4s loop so
+ * the gauge reads as actively working alongside the depth cue from the
+ * mount-time fill animation. Disabled in the scan scene (the radar
+ * overlay owns that visual) and on success/error scenes (the pulse
+ * gradient handles closure). */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-syncing:not(.is-scanning):not(.is-success):not(.is-error) .n2o-dash-tank-gauge-ring {
+  animation: n2o-ring-shimmer 2.4s ease-in-out infinite;
+}
+
+@keyframes n2o-ring-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
+}
+
+/* "Watching" (automation armed + idle): a slow, gentle breathing pulse on the
+   accent outline so the user can SEE N2O is actively watching - calmer and
+   slower than the syncing shimmer. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-watching .n2o-dash-tank-gauge-outline {
+  animation: n2o-ring-watch 3.2s ease-in-out infinite;
+}
+
+@keyframes n2o-ring-watch {
+  0%, 100% { opacity: 0.28; }
+  50% { opacity: 0.78; }
+}
+
+/* Light-mode bg ring — the dim --n2o-line-soft resolves to a pale
+   gray that reads dull against the hero's warm accent gradient.
+   Override the SVG stroke with a near-white at reduced opacity so
+   the ring hints as a track without dominating, then stack a crisp
+   1px accent outline on its outer edge for definition. */
+body.theme-light .n2o-dashboard .n2o-dash-tank-gauge > circle:first-of-type {
+  stroke: #fff;
+  stroke-opacity: 0.55;
+}
+
+/* Accent outline circles — inner + outer hairlines framing the
+   track. Subtle by default so they read as hints at the ring's edges,
+   not solid rings. Dark mode reads the accent stroke cleanly against
+   the dim panel; light mode needs LESS opacity because the accent
+   renders fully saturated against white and quickly reads as an
+   aggressive orange loop (user feedback: "can be less opacity"). */
+.n2o-dashboard .n2o-dash-tank-gauge-outline {
+  opacity: 0.45;
+}
+
+body.theme-light .n2o-dashboard .n2o-dash-tank-gauge-outline {
+  opacity: 0.1;
+}
+
+/* Scan scene: fade the continuous accent outlines WAY down (not
+   fully hidden — just barely noticeable so the ring still reads as a
+   framed loop). The radar hand's .n2o-dash-radar-glow hotspot
+   remains the dominant accent on the ring and sells the "hand makes
+   the ring glow where it points" feel. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-scanning .n2o-dash-tank-gauge-outline {
+  opacity: 0.1;
+}
+body.theme-light .n2o-dashboard .n2o-dash-hybrid-gauge.is-scanning .n2o-dash-tank-gauge-outline {
+  opacity: 0.18;
+}
+
+/* Light mode: also tone down the rotating shimmer. The radial
+   gradient hotspot reads strong against the white hero panel —
+   The rotating-shimmer light-mode override that used to live here
+   was dropped along with the rotating shimmer itself (which read as
+   a visible "hand" sticking out of the ring). Breathing glow below
+   has its own light-mode override. */
+
+/* Ring breathing glow — no rotation, no hot spot, no hand. The
+   ring just gently pulses opacity in a 3.2s cycle, making the whole
+   gauge feel "alive" without implying a direction or action. Built
+   as a soft radial-gradient bloom masked to an annulus sitting on
+   the ring track. Hidden during the scan scene so the radar overlay
+   owns that visual. */
+.n2o-dashboard .n2o-dash-hybrid-gauge:not(.is-scanning)::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 132px;
+  height: 132px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    transparent 34px,
+    color-mix(in srgb, var(--interactive-accent) 30%, transparent) 46px,
+    color-mix(in srgb, var(--interactive-accent) 15%, transparent) 56px,
+    color-mix(in srgb, var(--interactive-accent) 7%, transparent) 62px,
+    transparent 68px
+  );
+  filter: blur(1px);
+  animation: n2o-ring-breathe 2.6s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes n2o-ring-breathe {
+  0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.97); }
+  50%      { opacity: 0.7; transform: translate(-50%, -50%) scale(1.03); }
+}
+
+/* Light mode: halve the glow peak so the breathe reads as a
+   quiet pulse rather than an orange flash against white. Still
+   visible — just not overwhelming. */
+body.theme-light .n2o-dashboard .n2o-dash-hybrid-gauge:not(.is-scanning)::before {
+  background: radial-gradient(
+    circle,
+    transparent 34px,
+    color-mix(in srgb, var(--interactive-accent) 28%, transparent) 46px,
+    color-mix(in srgb, var(--interactive-accent) 14%, transparent) 56px,
+    color-mix(in srgb, var(--interactive-accent) 6%, transparent) 62px,
+    transparent 68px
+  );
+}
+
+/* ─── Progress ribbon ─────────────────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-progress-ribbon {
+  margin: 16px 0 14px;
+}
+
+.n2o-dashboard .n2o-dash-ribbon-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.n2o-dashboard .n2o-dash-ribbon-seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--n2o-line-soft);
+  transition: background 200ms linear;
+}
+
+.n2o-dashboard .n2o-dash-ribbon-seg.is-done { background: var(--n2o-ok); }
+.n2o-dashboard .n2o-dash-ribbon-seg.is-current { background: var(--n2o-accent); }
+.n2o-dashboard .n2o-dash-ribbon-seg.is-pending { background: var(--n2o-line-soft); }
+
+.n2o-dashboard .n2o-dash-ribbon-label {
+  font-family: var(--n2o-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--n2o-soft);
+}
+
+.n2o-dashboard .n2o-dash-ribbon-step { color: var(--n2o-accent); }
+
+/* ─── State 2: Ready to fill (V1) ─────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-readyfill {
+  padding: 8px 4px;
+}
+
+.n2o-dashboard .n2o-dash-readyfill-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 8px 16px;
+  background: radial-gradient(ellipse at top, var(--n2o-accent-soft) 0%, transparent 70%);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.n2o-dashboard .n2o-dash-readyfill-title {
+  margin-top: 14px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--n2o-ink);
+}
+
+.n2o-dashboard .n2o-dash-readyfill-sub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--n2o-soft);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+/* ─── Focus card ──────────────────────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-focus-card {
+  position: relative;
+  padding: 18px 18px 14px;
+  border: 1px solid var(--n2o-accent);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--n2o-accent-soft) 0%, var(--n2o-panel) 70%);
+  margin-bottom: 14px;
+}
+
+.n2o-dashboard .n2o-dash-step-chip {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--n2o-accent);
+  color: var(--n2o-on-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--n2o-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.n2o-dashboard .n2o-dash-focus-eyebrow {
+  font-family: var(--n2o-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--n2o-accent-ink);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.n2o-dashboard .n2o-dash-focus-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--n2o-ink);
+  margin-bottom: 6px;
+}
+
+.n2o-dashboard .n2o-dash-focus-body {
+  font-size: 12px;
+  color: var(--n2o-mid);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.n2o-dashboard .n2o-dash-focus-cta {
+  width: 100%;
+  height: 34px;
+  border-radius: 7px;
+}
+
+.n2o-dashboard .n2o-dash-focus-alt {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.n2o-dashboard .n2o-dash-focus-alt a {
+  font-size: 11.5px;
+  color: var(--n2o-mid);
+  text-decoration: underline;
+  text-decoration-color: var(--n2o-line);
+  cursor: pointer;
+}
+
+.n2o-dashboard .n2o-dash-focus-alt a:hover {
+  color: var(--n2o-accent);
+  text-decoration-color: var(--n2o-accent);
+}
+
+/* ─── Done steps ──────────────────────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-done-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.n2o-dashboard .n2o-dash-done-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+}
+
+.n2o-dashboard .n2o-dash-done-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--n2o-ok-soft);
+  color: var(--n2o-ok);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-done-check .svg-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--n2o-ok);
+}
+
+.n2o-dashboard .n2o-dash-done-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-done-title {
+  font-size: 12.5px;
+  color: var(--n2o-mid);
+}
+
+.n2o-dashboard .n2o-dash-done-meta {
+  font-family: var(--n2o-font-mono);
+  font-size: 11px;
+  color: var(--n2o-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dashboard .n2o-dash-done-edit {
+  font-size: 11px;
+  color: var(--n2o-accent);
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-done-edit:hover { text-decoration: underline; }
+
+/* ─── State 2/3: A+C Mix hybrid hero ─────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-hybrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /*
+   * No padding reset here. Pre-2026-04-26 there was a `padding: 0`
+   * declaration in this rule, vestigial from an earlier design where
+   * the inner flex layout repadded its own children. The outer
+   * `.n2o-dashboard > * :not(...)` gutter rule had higher specificity
+   * (0,4,0 from the three :not() classes) and silently overrode the
+   * reset, so the hybrid panel rendered with 12px horizontal gutter
+   * regardless. After P1 #20 (commit c04d51e) inverted the gutter
+   * rule into an explicit positive list, the gutter selector dropped
+   * to specificity 0,2,0 - tying the reset and losing on source
+   * order. Result: hybrid panel rendered flush to the right edge with
+   * a horizontal scrollbar. Removing the redundant reset eliminates
+   * the conflict at the source instead of out-specificing it. The
+   * 12px gutter from line ~3221 now applies cleanly.
+   */
+}
+
+/* Status row at top: dot + label + spacer + tier pill */
+.n2o-dashboard .n2o-dash-hybrid-statusrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 4px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-statusrow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-statusrow-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-statusrow-spacer { flex: 1; }
+
+.n2o-dashboard .n2o-dash-hybrid-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+  color: var(--interactive-accent);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-pill.is-pro {
+  background: color-mix(in srgb, var(--color-purple, #a855f7) 14%, transparent);
+  color: var(--color-purple, #a855f7);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-pill.is-expired {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+/* Settings gear in the top status row — small, muted, hover-accent */
+.n2o-dashboard .n2o-dash-hybrid-statusrow-gear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 4px;
+  border-radius: 5px;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-statusrow-gear:hover,
+.n2o-dashboard .n2o-dash-hybrid-statusrow-gear:focus,
+.n2o-dashboard .n2o-dash-hybrid-statusrow-gear:focus-visible {
+  background: color-mix(in srgb, var(--text-normal) 8%, transparent);
+  color: var(--text-normal);
+  outline: none;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-statusrow-gear .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* Hero gauge area — centered gauge inside radial accent gradient panel.
+   Default (dark mode): 14% accent over dark panel reads as a warm
+   amber glow. In light mode the same 14% washes out to barely-there
+   on a white background, so the hero looks flat and dull. The
+   theme-light override below boosts the mix, softens the falloff,
+   and tints the whole panel a touch so the hero still reads as a
+   distinct surface. */
+.n2o-dashboard .n2o-dash-hybrid-gauge-wrap {
+  /*
+   * Single radial anchored AT the top edge (matches the original
+   * before the v0.9.39 misedit that shifted the center to 15% down
+   * and left a dark horizontal strip across the top). The only
+   * change from the long-standing original: transparent stop pushed
+   * from 72% to 100% so the falloff is gradual at the right edge of
+   * wider sidebars instead of producing a visible "stripe."
+   */
+  background: radial-gradient(
+    ellipse at top,
+    color-mix(in srgb, var(--interactive-accent) 14%, transparent) 0%,
+    color-mix(in srgb, var(--interactive-accent) 5%, transparent) 60%,
+    transparent 100%
+  );
+  /* Full-bleed across the card's 12px gutter. The gauge-wrap is a FLEX item
+     (child of the flex-column .n2o-dash-hybrid), and negative margins shift a
+     flex item without widening it - so margin-right:-12px was a no-op and the
+     panel rendered 24px short on the right. Expand the width explicitly to span
+     the gutter on both sides. */
+  width: calc(100% + 24px);
+  /* Override the generic .n2o-dash-hybrid-gauge-wrap max-width:100% guard
+     (same specificity, declared earlier) so the explicit bleed width isn't
+     clamped back to the container. overflow-x:hidden on the root still guards
+     against real overflow. */
+  max-width: calc(100% + 24px);
+  margin: 0 -12px 6px;
+  padding: 14px 16px 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--background-modifier-border) 40%, transparent);
+}
+
+/* Light-mode boost — stronger accent, wider falloff, faint fill so
+   the hero doesn't disappear against a white background. */
+body.theme-light .n2o-dashboard .n2o-dash-hybrid-gauge-wrap {
+  background:
+    radial-gradient(
+      ellipse 90% 75% at 50% 15%,
+      color-mix(in srgb, var(--interactive-accent) 28%, transparent) 0%,
+      color-mix(in srgb, var(--interactive-accent) 10%, transparent) 45%,
+      transparent 85%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--interactive-accent) 6%, transparent) 0%,
+      transparent 100%
+    );
+}
+
+.n2o-dashboard .n2o-dash-hybrid-gauge {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 0;
+  position: relative;
+}
+
+/* Radar sweep overlay — appears during the "discovering" / "finalizing"
+   sync phases where there is no % progress to report. Conic-gradient
+   paints a trailing comet tail BEHIND the rotating radius line: bright
+   at the line's tip (360deg), fading to transparent 90deg counter-
+   clockwise from it. As the whole fan rotates CW the trail decays
+   behind the line exactly like movie radar. Masked to an annular ring
+   so only the gauge circumference lights up. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-scanning::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 122px;
+  height: 122px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 270deg,
+    color-mix(in srgb, var(--n2o-accent) 30%, transparent) 320deg,
+    color-mix(in srgb, var(--n2o-accent) 85%, transparent) 360deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 44px, #000 46px, #000 58px, transparent 60px);
+          mask: radial-gradient(circle, transparent 44px, #000 46px, #000 58px, transparent 60px);
+  animation: n2o-radar-sweep 1.8s linear infinite;
+  z-index: 1;
+}
+
+/* Hide the N₂O glyph + % label during scanning — the radar IS the
+   centerpiece in that phase; the wordmark is redundant and fights the
+   animation for visual attention. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-scanning .n2o-dash-tank-gauge text {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Hide ONLY the coloured progress arc during scan — keep the dim bg
+   circle (`circle:first-of-type`, stroked with `--n2o-line-soft`) visible
+   so the gauge still reads as a ring, just with no fill.
+   Why: the arc's stroke is `var(--n2o-accent)` = theme's
+   `--interactive-accent` (red/rose in some themes). During sync-phase
+   'discovering' fillPct is low → a short red arc; during picker
+   discovery fillPct is forced to 100 → a full red ring. Either way the
+   arc fights the amber radar and the two scan entry points look
+   different. Hiding just the arc leaves a clean neutral ring outline
+   that frames the radar consistently in both states. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-scanning .n2o-dash-tank-gauge-ring {
+  opacity: 0;
+}
+
+
+/* Faint centre ping — small dot that pulses in sync with the sweep,
+   reinforcing the radar feel without competing with the N₂O wordmark. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-scanning::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--n2o-accent);
+  opacity: 0;
+  pointer-events: none;
+  animation: n2o-radar-ping 1.8s ease-out infinite;
+  z-index: 2;
+}
+
+@keyframes n2o-radar-sweep {
+  0%   { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes n2o-radar-ping {
+  0%   { opacity: 0.9; transform: scale(0.6); }
+  60%  { opacity: 0.0; transform: scale(2.2); }
+  100% { opacity: 0;   transform: scale(2.2); }
+}
+
+/* Rotating radius line — the "hand" of the radar. Runs in sync with the
+   sweep fan (same 1.8s duration, same keyframe). Pinned at the centre
+   and pointing outward, drawn as a 1px-tall horizontal bar that fades
+   from solid-accent at the centre end to transparent at the edge. */
+.n2o-dashboard .n2o-dash-radar-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 58px;
+  height: 1.5px;
+  transform-origin: 0 50%;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--n2o-accent) 95%, transparent),
+    color-mix(in srgb, var(--n2o-accent) 30%, transparent) 75%,
+    transparent
+  );
+  pointer-events: none;
+  animation: n2o-radar-line-sweep 1.8s linear infinite;
+  z-index: 2;
+}
+
+/* Bright leading glow arc — the ONLY neon-lit stretch of the ring.
+   A short wedge (~30deg) rides the ring at the radius line's tip.
+   Heavy blur + drop-shadow produces a concentrated hotspot that bleeds
+   ambient amber light outward ONLY around the hand position — the rest
+   of the ring stays its normal dim colour. Matches real-radar phosphor
+   behaviour: only the just-swept arc is hot. */
+.n2o-dashboard .n2o-dash-radar-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 122px;
+  height: 122px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 330deg,
+    color-mix(in srgb, var(--n2o-accent) 40%, transparent) 345deg,
+    color-mix(in srgb, var(--n2o-accent) 100%, transparent) 358deg,
+    color-mix(in srgb, var(--n2o-accent) 100%, transparent) 360deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 42px, #000 44px, #000 60px, transparent 62px);
+          mask: radial-gradient(circle, transparent 42px, #000 44px, #000 60px, transparent 62px);
+  filter:
+    blur(3px)
+    drop-shadow(0 0 6px color-mix(in srgb, var(--n2o-accent) 80%, transparent))
+    drop-shadow(0 0 14px color-mix(in srgb, var(--n2o-accent) 50%, transparent));
+  animation: n2o-radar-sweep 1.8s linear infinite;
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+@keyframes n2o-radar-line-sweep {
+  0%   { transform: rotate(-90deg); }
+  100% { transform: rotate(270deg); }
+}
+
+/* Radar blips — small dots that flash briefly at fixed positions
+   inside the gauge, simulating contacts being detected. Each has its
+   own animation-delay so they fire in sequence rather than all at once. */
+.n2o-dashboard .n2o-dash-radar-blips {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.n2o-dashboard .n2o-dash-radar-blip {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--n2o-accent);
+  opacity: 0;
+  animation: n2o-radar-blip-flash 2.4s ease-out infinite;
+}
+
+/* Size variants — bigger blips glow more (shadow scales with size) so a
+   "large target" reads as more important than a "small signal." */
+.n2o-dashboard .n2o-dash-radar-blip.is-s {
+  width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px;
+  box-shadow: 0 0 4px color-mix(in srgb, var(--n2o-accent) 55%, transparent);
+}
+.n2o-dashboard .n2o-dash-radar-blip.is-m {
+  width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--n2o-accent) 70%, transparent);
+}
+.n2o-dashboard .n2o-dash-radar-blip.is-l {
+  width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
+  box-shadow: 0 0 9px color-mix(in srgb, var(--n2o-accent) 80%, transparent);
+}
+
+@keyframes n2o-radar-blip-flash {
+  0%   { opacity: 0; transform: scale(0.4); }
+  10%  { opacity: 1; transform: scale(1.2); }
+  25%  { opacity: 0.6; transform: scale(1); }
+  60%  { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(0.4); }
+}
+
+/* HUD crosshair — subtle reticle through the gauge center. Always
+   faintly visible during scan; adds depth and reinforces the "it's
+   actually scanning something" feel. */
+.n2o-dashboard .n2o-dash-radar-cross {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.18;
+}
+
+.n2o-dashboard .n2o-dash-radar-cross-h,
+.n2o-dashboard .n2o-dash-radar-cross-v {
+  position: absolute;
+  background: color-mix(in srgb, var(--n2o-accent) 70%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-radar-cross-h {
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.n2o-dashboard .n2o-dash-radar-cross-v {
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+}
+
+/* Tick marks — 8 short dashes at cardinal + ordinal positions around
+   the outer ring. Each flashes briefly in sequence matched to the
+   sweep's position (via per-tick animation-delay in the JSX), so the
+   dial feels like it's actively picking up bearings as the hand moves. */
+.n2o-dashboard .n2o-dash-radar-ticks {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.n2o-dashboard .n2o-dash-radar-tick {
+  /* 0-sized anchor positioned at the gauge centre (parent .ticks sits
+     at 50%/50%). Inline `transform: rotate(Xdeg)` from JSX points this
+     anchor at its cardinal/ordinal direction. The ::before dash is
+     drawn 62px out along that axis — so the tick appears at the ring's
+     outer edge. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  animation: n2o-radar-tick-flash 1.8s linear infinite;
+}
+
+.n2o-dashboard .n2o-dash-radar-tick::before {
+  content: '';
+  position: absolute;
+  top: -0.75px;
+  left: 62px;
+  width: 6px;
+  height: 1.5px;
+  background: color-mix(in srgb, var(--n2o-accent) 85%, transparent);
+  border-radius: 1px;
+  box-shadow: 0 0 4px color-mix(in srgb, var(--n2o-accent) 55%, transparent);
+}
+
+@keyframes n2o-radar-tick-flash {
+  0%,  88%,  100% { opacity: 0.3; }
+  92%,  96%       { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   HERO SCENES — each is mutually exclusive, triggered via is-<scene>
+   on .n2o-dash-hybrid-gauge. Keep the rules narrow so we don't step
+   on each other's toes and can tweak scenes independently.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Success — brief green celebration after a clean sync.
+   Ring stroke + progress both go green, soft green bloom around the
+   circle, one-shot scale-in pop on scene entry (forwards so it sticks
+   at the final state). */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-success .n2o-dash-tank-gauge-ring {
+  stroke: var(--color-green);
+}
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-success .n2o-dash-tank-gauge > circle:first-of-type {
+  stroke: color-mix(in srgb, var(--color-green) 20%, transparent);
+}
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-success .n2o-dash-tank-gauge {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-green) 55%, transparent));
+  animation: n2o-hero-success-pop 0.9s ease-out;
+}
+
+@keyframes n2o-hero-success-pop {
+  0%   { transform: scale(0.92); }
+  55%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Override the breathing-glow halo to match the state. Without this,
+   the ::before halo at line ~6318 keeps using --interactive-accent
+   (the theme accent, often red/orange) so the ring stroke turns green
+   on success but the surrounding glow stays the wrong color. Re-bind
+   the radial gradient stops to the state colour for each state. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-success:not(.is-scanning)::before {
+  background: radial-gradient(
+    circle,
+    transparent 34px,
+    color-mix(in srgb, var(--color-green) 30%, transparent) 46px,
+    color-mix(in srgb, var(--color-green) 15%, transparent) 56px,
+    color-mix(in srgb, var(--color-green) 7%, transparent) 62px,
+    transparent 68px
+  );
+}
+body.theme-light .n2o-dashboard .n2o-dash-hybrid-gauge.is-success:not(.is-scanning)::before {
+  background: radial-gradient(
+    circle,
+    transparent 34px,
+    color-mix(in srgb, var(--color-green) 28%, transparent) 46px,
+    color-mix(in srgb, var(--color-green) 14%, transparent) 56px,
+    color-mix(in srgb, var(--color-green) 6%, transparent) 62px,
+    transparent 68px
+  );
+}
+
+/* ── Error — red ring breathing slowly, signalling "something's
+   wrong" without screaming. No shake, no flicker — the user already
+   knows; we just need them to notice. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-error .n2o-dash-tank-gauge-ring,
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-error .n2o-dash-tank-gauge > circle:first-of-type {
+  stroke: var(--color-red);
+}
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-error .n2o-dash-tank-gauge > circle:first-of-type {
+  stroke: color-mix(in srgb, var(--color-red) 25%, transparent);
+}
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-error .n2o-dash-tank-gauge {
+  animation: n2o-hero-error-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes n2o-hero-error-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-red) 40%, transparent));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-red) 70%, transparent));
+    opacity: 1;
+  }
+}
+
+/* Re-bind the breathing-glow halo to red on error so the surrounding
+   glow doesn't keep showing the theme accent while the ring stroke
+   has gone red. Same pattern as the success override above. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-error:not(.is-scanning)::before {
+  background: radial-gradient(
+    circle,
+    transparent 34px,
+    color-mix(in srgb, var(--color-red) 30%, transparent) 46px,
+    color-mix(in srgb, var(--color-red) 15%, transparent) 56px,
+    color-mix(in srgb, var(--color-red) 7%, transparent) 62px,
+    transparent 68px
+  );
+}
+body.theme-light .n2o-dashboard .n2o-dash-hybrid-gauge.is-error:not(.is-scanning)::before {
+  background: radial-gradient(
+    circle,
+    transparent 34px,
+    color-mix(in srgb, var(--color-red) 28%, transparent) 46px,
+    color-mix(in srgb, var(--color-red) 14%, transparent) 56px,
+    color-mix(in srgb, var(--color-red) 6%, transparent) 62px,
+    transparent 68px
+  );
+}
+
+/* ── Attention — amber breathing, lighter than error. Conflicts sit
+   here: user action needed but nothing is broken. */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-attention .n2o-dash-tank-gauge {
+  animation: n2o-hero-attention-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes n2o-hero-attention-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--n2o-accent) 30%, transparent));
+    opacity: 0.8;
+  }
+  50% {
+    filter: drop-shadow(0 0 9px color-mix(in srgb, var(--n2o-accent) 65%, transparent));
+    opacity: 1;
+  }
+}
+
+/* ── Paused — desaturated + dimmed, very slow breathe. Says "we're
+   asleep, not broken". */
+.n2o-dashboard .n2o-dash-hybrid-gauge.is-paused .n2o-dash-tank-gauge {
+  filter: grayscale(0.55);
+  animation: n2o-hero-paused-breathe 4s ease-in-out infinite;
+}
+
+@keyframes n2o-hero-paused-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+}
+
+.n2o-dashboard .n2o-dash-hybrid-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-normal);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* During scan the gauge centre is empty (glyph + % hidden), so the
+   default tight gap leaves the title floating right under the radar.
+   Push it down for clear breathing room between the sweep and caption. */
+.n2o-dashboard .n2o-dash-hero-scene.is-scan + .n2o-dash-hybrid-title {
+  margin-top: 14px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.45;
+  margin: 4px auto 14px;
+  max-width: 280px;
+  /* Clamp to 2 lines + fixed min-height so the hero doesn't jump as
+     live progress messages grow and shrink (discovery floods the sub
+     with page-name lists that would otherwise resize the panel every
+     tick). Reserves ~2.9em of vertical space regardless of content. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.45em * 2);
+}
+
+/* Scope card — theme-aware tint with prominent border.
+   Default (dark mode): 6% white-on-dark reads as a lifted surface.
+   Light-mode override below swaps to pure white + a subtle shadow so
+   the card crisps up against the dashboard's light panel background
+   instead of melting into it. */
+.n2o-dashboard .n2o-dash-hybrid-scopecard {
+  background: color-mix(in srgb, var(--text-normal) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-normal) 14%, transparent);
+  border-radius: 8px;
+  padding: 14px 14px;
+  /* Breathing room ABOVE the card so it doesn't sit flush with the
+     hero panel's bottom section line. Matches the 16px margin-top
+     the .n2o-dash-hybrid-section rule uses for Automation / Recent
+     activity / Issues — keeps the vertical rhythm consistent as the
+     eye moves down the dashboard. */
+  margin-top: 16px;
+  margin-bottom: 10px;
+}
+
+body.theme-light .n2o-dashboard .n2o-dash-hybrid-scopecard {
+  background: var(--background-primary);
+  border-color: color-mix(in srgb, var(--text-normal) 10%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--text-normal) 6%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-scopecard-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-scopecard-icon {
+  display: inline-flex;
+  color: var(--text-faint);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-scopecard-icon .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-scopecard-path {
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-scopecard-edit {
+  font-size: 11px;
+  color: var(--interactive-accent);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-scopecard-edit:hover { text-decoration: underline; }
+
+.n2o-dashboard .n2o-dash-hybrid-scopecard-stats {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-stat-num {
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-weight: 700;
+  color: var(--text-normal);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-stat-label {
+  color: var(--text-muted);
+}
+
+/* Direction — open inline section, NO card border or background */
+.n2o-dashboard .n2o-dash-hybrid-dircard {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+/* Direction chip row — open layout */
+.n2o-dashboard .n2o-dash-hybrid-direction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-direction-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-direction-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+  color: var(--text-normal);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-direction-chip:hover,
+.n2o-dashboard .n2o-dash-hybrid-direction-chip:focus,
+.n2o-dashboard .n2o-dash-hybrid-direction-chip:focus-visible {
+  background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+  outline: none;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-direction-side {
+  font-weight: 500;
+  color: var(--text-normal);
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-direction-arrow {
+  font-size: 14px;
+  color: var(--interactive-accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-direction-desc {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Primary CTA + ghost link */
+.n2o-dashboard .n2o-dash-hybrid-cta-wrap {
+  margin-top: 2px;
+  display: flex;
+  gap: 6px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-cta {
+  width: 100%;
+  height: 34px;
+}
+
+/* Sync action pair: [Pause] [Cancel] both equal */
+.n2o-dashboard .n2o-dash-hybrid-cta-wrap.is-sync-pair > * {
+  flex: 1;
+}
+
+/* Idle action trio: [Sync] big, [Pull] [Push] secondary */
+.n2o-dashboard .n2o-dash-hybrid-cta-wrap.is-idle-trio .n2o-dash-hybrid-cta {
+  flex: 1;
+  width: auto;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-cta-wrap.is-idle-trio .n2o-dash-hybrid-secondary-btn {
+  flex: 0 0 auto;
+}
+
+/* Secondary buttons (Pause / Cancel / Pull / Push) — match design soft style */
+.n2o-dashboard .n2o-dash-hybrid-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .1s;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-secondary-btn:hover {
+  background: color-mix(in srgb, var(--text-normal) 5%, transparent);
+  color: var(--text-normal);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-secondary-btn .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* Status dot color per state */
+.n2o-dashboard .n2o-dash-hybrid-statusrow-dot.is-ok { background: var(--color-green, #16a34a); }
+.n2o-dashboard .n2o-dash-hybrid-statusrow-dot.is-syncing { background: var(--interactive-accent); animation: n2o-pulse-dot 1.4s ease-in-out infinite; }
+.n2o-dashboard .n2o-dash-hybrid-statusrow-dot.is-pending { background: var(--text-faint); }
+
+@keyframes n2o-pulse-dot {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Inline progress bar during sync (under hero subtitle) */
+.n2o-dashboard .n2o-dash-hybrid-progress {
+  margin: 8px 0 4px;
+}
+
+/* Generic section wrapper used by Recent activity / Automation / Issues.
+   A clear top divider gives the major sections a consistent visual rhythm. */
+.n2o-dashboard .n2o-dash-hybrid-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--text-normal) 12%, transparent);
+}
+
+/* Setup block (onboarding only) uses the same divider rhythm */
+.n2o-dashboard .n2o-dash-hybrid-setup {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--text-normal) 12%, transparent);
+}
+
+/* Section header: label + count chip OR live indicator */
+.n2o-dashboard .n2o-dash-hybrid-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-section-count {
+  margin-left: auto;
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-red, #dc2626);
+  background: color-mix(in srgb, var(--color-red, #dc2626) 14%, transparent);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-section-live {
+  margin-left: auto;
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--interactive-accent);
+}
+
+/* Pass N chip on the hero — small monospace badge between the hero
+ * title and subtitle, surfaces the multi-pass discovery loop's
+ * current pass number ("PASS 1" while writing selected items, "PASS 2"
+ * during the nested-content sweep). Hidden when no Pass prefix is
+ * present (discovery, finalize, single-pass syncs). */
+/* Pass-message chip: carries the full orchestrator message ("PASS 2 ·
+ * RESOLVING VIEWS FOR 2 NEW DATABASES"), not just the pass number. Sized
+ * to fit a sentence, not a single pill. The subtitle below is hidden when
+ * this chip is visible so the same text isn't shown twice. */
+.n2o-dashboard .n2o-dash-hybrid-pass-chip {
+  align-self: center;
+  max-width: 90%;
+  margin: 6px 0 4px;
+  padding: 4px 12px;
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--interactive-accent) 32%, transparent);
+  border-radius: 8px;
+  text-transform: uppercase;
+  word-break: break-word;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-pass-chip.is-hidden,
+.n2o-dashboard .n2o-dash-hybrid-sub.is-hidden {
+  display: none;
+}
+
+/* Flat wrapper for the Setup section. Rows inside are line-separated
+   via their own border-bottom — no card background/border needed. */
+.n2o-dashboard .n2o-dash-hybrid-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* Issue cards — red left-border accent, title + sub + action button */
+.n2o-dashboard .n2o-dash-hybrid-issue-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  background: color-mix(in srgb, var(--color-red, #dc2626) 5%, var(--background-secondary));
+  border: 1px solid color-mix(in srgb, var(--color-red, #dc2626) 18%, transparent);
+  border-left: 3px solid var(--color-red, #dc2626);
+  border-radius: 7px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-issue-card:first-of-type {
+  margin-top: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-issue-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-issue-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-normal);
+  line-height: 1.3;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-issue-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-issue-btn {
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 5px;
+  background: var(--background-primary);
+  border: 1px solid color-mix(in srgb, var(--color-red, #dc2626) 25%, transparent);
+  color: var(--color-red, #dc2626);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-issue-btn:hover {
+  background: color-mix(in srgb, var(--color-red, #dc2626) 8%, var(--background-primary));
+}
+
+.n2o-dashboard .n2o-dash-hybrid-ghost {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-ghost a {
+  color: var(--interactive-accent);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+.n2o-dashboard .n2o-dash-hybrid-ghost a:hover { text-decoration: underline; }
+
+/* (setup margin-top handled by the generic section rule above) */
+
+.n2o-dashboard .n2o-dash-hybrid-setup-label {
+  font-family: var(--n2o-font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-normal) 10%, transparent);
+  border-radius: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step:last-child { border-bottom: none; }
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-clickable {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-clickable:hover {
+  background: color-mix(in srgb, var(--text-normal) 5%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-clickable:focus,
+.n2o-dashboard .n2o-dash-hybrid-step.is-clickable:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--interactive-accent);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step-chev {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-faint);
+  margin-left: 4px;
+  flex-shrink: 0;
+  transition: transform 0.1s, color 0.1s;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step-chev .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-clickable:hover .n2o-dash-hybrid-step-chev {
+  color: var(--interactive-accent);
+  transform: translateX(2px);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-faint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-done .n2o-dash-hybrid-step-dot {
+  border-color: var(--color-green);
+  background: color-mix(in srgb, var(--color-green) 22%, transparent);
+  color: var(--color-green);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-done .n2o-dash-hybrid-step-dot .svg-icon {
+  stroke-width: 2.6;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-done .n2o-dash-hybrid-step-dot .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-active .n2o-dash-hybrid-step-dot {
+  border-color: var(--n2o-accent);
+  background: color-mix(in srgb, var(--n2o-accent) 14%, transparent);
+  color: var(--n2o-accent);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step-title {
+  font-family: var(--n2o-font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-normal);
+  line-height: 1.3;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-active .n2o-dash-hybrid-step-title {
+  font-weight: 600;
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-done .n2o-dash-hybrid-step-title {
+  color: var(--text-muted);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step.is-pending .n2o-dash-hybrid-step-title {
+  color: var(--text-muted);
+}
+
+.n2o-dashboard .n2o-dash-hybrid-step-sub {
+  font-family: var(--n2o-font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+/* ─── State 3: Pre-sync (V2 + V4) ─────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-presync {
+  padding: 8px 4px;
+}
+
+.n2o-dashboard .n2o-dash-presync-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.n2o-dashboard .n2o-dash-presync-headtxt {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-presync-eyebrow {
+  font-family: var(--n2o-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--n2o-soft);
+}
+
+.n2o-dashboard .n2o-dash-presync-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--n2o-ink);
+  margin-top: 2px;
+}
+
+.n2o-dashboard .n2o-dash-presync-sub {
+  font-size: 12.5px;
+  color: var(--n2o-mid);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+/* Dry-run 2x2 stat grid */
+.n2o-dashboard .n2o-dash-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--n2o-line);
+  border: 1px solid var(--n2o-line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.n2o-dashboard .n2o-dash-stat-cell {
+  padding: 10px 12px;
+  background: var(--n2o-panel);
+}
+
+.n2o-dashboard .n2o-dash-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--n2o-soft);
+  margin-bottom: 3px;
+}
+
+.n2o-dashboard .n2o-dash-stat-value {
+  font-family: var(--n2o-font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--n2o-ink);
+  letter-spacing: -0.3px;
+}
+
+/* Dashed estimate callout */
+.n2o-dashboard .n2o-dash-estimate-callout {
+  padding: 8px 10px;
+  background: var(--n2o-bg);
+  border: 1px dashed var(--n2o-line);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--n2o-soft);
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+/* What will sync list */
+.n2o-dashboard .n2o-dash-willsync {
+  margin-bottom: 14px;
+}
+
+.n2o-dashboard .n2o-dash-willsync-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--n2o-soft);
+  margin-bottom: 6px;
+}
+
+.n2o-dashboard .n2o-dash-willsync-body {
+  background: var(--n2o-panel);
+  border: 1px solid var(--n2o-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.n2o-dashboard .n2o-dash-willsync-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--n2o-line-soft);
+  font-size: 12px;
+}
+
+.n2o-dashboard .n2o-dash-willsync-row:last-child { border-bottom: none; }
+
+.n2o-dashboard .n2o-dash-willsync-icon .svg-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--n2o-soft);
+}
+
+.n2o-dashboard .n2o-dash-willsync-name {
+  flex: 1;
+  color: var(--n2o-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dashboard .n2o-dash-willsync-count {
+  font-family: var(--n2o-font-mono);
+  font-size: 11px;
+  color: var(--n2o-soft);
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-willsync-more {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--n2o-soft);
+  text-align: center;
+}
+
+.n2o-dashboard .n2o-dash-willsync-add {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--n2o-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.n2o-dashboard .n2o-dash-willsync-add:hover { text-decoration: underline; }
+
+.n2o-dashboard .n2o-dash-presync-cta {
+  width: 100%;
+  height: 34px;
+  border-radius: 7px;
+}
+
+.n2o-dashboard .n2o-dash-presync-hint {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--n2o-soft);
+}
+
+/* Review & adjust rows on the pre-sync screen */
+.n2o-dashboard .n2o-dash-presync-adjust {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 8px 0 14px;
+  border: 1px solid var(--n2o-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--n2o-panel);
+  border-bottom: 1px solid var(--n2o-line-soft);
+  font-size: 12px;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-row:last-child {
+  border-bottom: none;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-icon {
+  display: inline-flex;
+  color: var(--n2o-soft);
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-icon .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--n2o-soft);
+  min-width: 50px;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-value {
+  flex: 1;
+  font-family: var(--n2o-font-mono);
+  color: var(--n2o-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-edit {
+  font-size: 11px;
+  color: var(--n2o-accent);
+  text-decoration: none;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.n2o-dashboard .n2o-dash-presync-adjust-edit:hover {
+  text-decoration: underline;
+}
+
+/* Back link at the bottom of pre-sync */
+.n2o-dashboard .n2o-dash-presync-back {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.n2o-dashboard .n2o-dash-presync-back a {
+  font-size: 11.5px;
+  color: var(--n2o-soft);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.n2o-dashboard .n2o-dash-presync-back a:hover {
+  color: var(--n2o-accent);
+}
+
+/* ─── State 4: First sync running ─────────────────────────────── */
+
+.n2o-dashboard .n2o-dash-syncing-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 18px 8px;
+}
+
+.n2o-dashboard .n2o-dash-syncing-title {
+  margin-top: 14px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--n2o-ink);
+}
+
+.n2o-dashboard .n2o-dash-syncing-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--n2o-soft);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+.n2o-dashboard .n2o-dash-syncing-track {
+  width: 100%;
+  height: 4px;
+  background: var(--n2o-line-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.n2o-dashboard .n2o-dash-syncing-track .n2o-dash-progress-fill {
+  height: 100%;
+  background: var(--n2o-accent);
+  border-radius: 999px;
+  transition: width 200ms linear;
+}
+
+.n2o-dashboard .n2o-dash-syncing-cancel {
+  margin-top: 14px;
+}
+
+/* ─── Minimal footer (first-run states) ────────────────────────── */
+
+.n2o-dashboard .n2o-dash-minfooter {
+  /* margin-top: auto lives on the bottom-shell wrapper now — footer
+     is a child of the shell. */
+  /* 6px top + 10px bottom keeps the gear off the divider line and
+     lands the version text above Obsidian's own bottom chrome with
+     breathing room. Horizontal padding matches the banner above (12px)
+     so they share a vertical gutter. */
+  padding: 6px 12px 10px;
+  border-top: 1px solid var(--n2o-line-soft);
+  /* Column layout — the gear/version row plus an empty placeholder
+     row below it double the footer height and keep it clear of
+     Obsidian's own bottom chrome. See the primary rule above for the
+     detailed reasoning. */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* Bumped from 11px to 13px so the version text matches Obsidian's
+     own small-text baseline instead of looking like a separate, tinier
+     caption. */
+  font-size: 13px;
+  color: var(--n2o-soft);
+}
+
+.n2o-dashboard .n2o-dash-minfooter .n2o-dash-minfooter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Matches Obsidian's native ribbon/action-button height (~28px) so
+     the gear feels like part of the app, not a smaller N2O variant. */
+  min-height: 28px;
+}
+
+.n2o-dashboard .n2o-dash-minfooter .n2o-dash-minfooter-pad {
+  min-height: 28px;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-gear {
+  /* Sized to match Obsidian's native ribbon action buttons (~28px) so
+     the gear looks like a first-class app control. SVG scales up to
+     18px below — the standard Lucide-icon size Obsidian uses. */
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--n2o-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-gear:hover {
+  background: var(--background-modifier-hover);
+  color: var(--n2o-ink);
+}
+
+.n2o-dashboard .n2o-dash-minfooter-gear .svg-icon {
+  /* 18px matches Obsidian's default Lucide icon render size in the
+     ribbon + setting buttons. Previously 14px here made the gear look
+     shrunken compared to every other icon in the app chrome. */
+  width: 18px;
+  height: 18px;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-spacer {
+  flex: 1;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-version {
+  font-family: var(--n2o-font-mono);
+  color: var(--n2o-faint);
+  /* Scale up to match the row's font-size bump (13px from 11px). */
+  font-size: 13px;
+}
+
+/* Root needs to be a flex column so minfooter can margin-top: auto. */
+.n2o-dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* ─── Post-setup multi-section dashboard ──────────────────────── */
+
+.n2o-dashboard .n2o-dash-postsetup {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 4px 12px;
+}
+
+.n2o-dashboard .n2o-dash-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.n2o-dashboard .n2o-dash-section-label {
+  font-family: var(--n2o-font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.n2o-dashboard .n2o-dash-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Recent activity list — one row per item, dot + action + file + time */
+.n2o-dashboard .n2o-dash-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.n2o-dashboard .n2o-dash-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--background-modifier-border) 35%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-activity-row:last-child {
+  border-bottom: none;
+}
+
+.n2o-dashboard .n2o-dash-activity-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-faint);
+}
+
+.n2o-dashboard .n2o-dash-activity-dot.is-created {
+  background: var(--interactive-accent);
+}
+
+.n2o-dashboard .n2o-dash-activity-dot.is-updated {
+  background: var(--text-faint);
+}
+
+.n2o-dashboard .n2o-dash-activity-dot.is-live {
+  background: var(--interactive-accent);
+  animation: n2o-spn 1.4s ease-in-out infinite;
+}
+
+.n2o-dashboard .n2o-dash-activity-action {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  width: 56px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.n2o-dashboard .n2o-dash-activity-file {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dashboard .n2o-dash-activity-time {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Flat sections (Recent Activity + Automation per 2026-04-20 design) ──
+   No card chrome. Rows sit flush against the sidebar gutter with
+   generous vertical rhythm. Typography is bigger than the old
+   list-in-a-card look so each row reads as a distinct event, not a
+   log line. */
+.n2o-dashboard .n2o-dash-flat-section {
+  margin-top: 18px;
+}
+
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-hybrid-section-head {
+  margin-bottom: 10px;
+}
+
+/* "VIEW ALL" link inline with the section header — small, muted,
+   uppercase like the label, on the far right. */
+.n2o-dashboard .n2o-dash-section-viewall {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.n2o-dashboard .n2o-dash-section-viewall:hover {
+  color: var(--text-normal);
+  text-decoration: underline;
+}
+
+/* Upgrade activity rows inside a flat section — larger, no border
+   divider, dot + action + filename + timestamp. Matches the design
+   reference: UPDATED / CREATED labels in bold uppercase, filenames in
+   normal weight, timestamps right-aligned and muted. */
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-activity-row {
+  padding: 4px 0;
+  font-size: 13px;
+  border-bottom: none;
+  gap: 10px;
+}
+
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-activity-dot {
+  width: 7px;
+  height: 7px;
+}
+
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-activity-action {
+  font-size: 10.5px;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 64px;
+}
+
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-activity-file {
+  font-size: 13px;
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-activity-time {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* Automation toggles inside a flat section — larger label, muted
+   monospace sub-label below, toggle right-aligned. No dividers between
+   rows (deliberate: toggles read as independent controls, not a list). */
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-toggle-row {
+  padding: 8px 0;
+  border-bottom: none;
+  gap: 12px;
+  align-items: center;
+}
+
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-toggle-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-toggle-label {
+  font-family: var(--n2o-font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+  line-height: 1.35;
+}
+
+/* Descriptions are prose, not data - clean readable sans, NOT monospace. */
+.n2o-dashboard .n2o-dash-flat-section .n2o-dash-toggle-desc {
+  font-family: var(--n2o-font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* STATUS section */
+.n2o-dashboard .n2o-dash-statusrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.n2o-dashboard .n2o-dash-statusrow-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-statusrow-dot.is-ok { background: var(--n2o-ok); }
+.n2o-dashboard .n2o-dash-statusrow-dot.is-warn { background: var(--n2o-warn); }
+.n2o-dashboard .n2o-dash-statusrow-dot.is-syncing {
+  background: var(--n2o-accent);
+  animation: n2o-pulse 1.2s ease-in-out infinite;
+}
+
+.n2o-dashboard .n2o-dash-statusrow-text {
+  flex: 1;
+  color: var(--n2o-ink);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}.n2o-dashboard .n2o-dash-statusrow-track {
+  height: 3px;
+  background: var(--n2o-line-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.n2o-dashboard .n2o-dash-statusrow-fill {
+  height: 100%;
+  background: var(--n2o-accent);
+  width: 0;
+  transition: width 200ms linear;
+}
+
+.n2o-dashboard .n2o-dash-statusrow-detail {
+  font-family: var(--n2o-font-mono);
+  font-size: 10.5px;
+  color: var(--n2o-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Connect flow (State 1 sub-states) ───────────────────────── */
+
+.n2o-dashboard .n2o-dash-connect-heading {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--n2o-ink);
+  margin-bottom: 6px;
+}
+
+.n2o-dashboard .n2o-dash-connect-sub {
+  font-size: 12.5px;
+  color: var(--n2o-mid);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.n2o-dashboard .n2o-dash-connect-back {
+  margin-bottom: 12px;
+}
+
+.n2o-dashboard .n2o-dash-connect-back a {
+  font-size: 12px;
+  color: var(--n2o-soft);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.n2o-dashboard .n2o-dash-connect-back a:hover {
+  color: var(--n2o-accent);
+}
+
+/* 1b — Error banner (shown on choose after OAuth timeout etc) */
+.n2o-dashboard .n2o-dash-connect-banner {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--n2o-err);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--n2o-err) 10%, transparent);
+  color: var(--n2o-err);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* 1b — Auth method choice cards */
+.n2o-dashboard .n2o-dash-auth-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.n2o-dashboard .n2o-dash-auth-card {
+  padding: 14px;
+  border: 1px solid var(--n2o-line);
+  border-radius: 10px;
+  background: var(--n2o-panel);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.n2o-dashboard .n2o-dash-auth-card:hover,
+.n2o-dashboard .n2o-dash-auth-card:focus-visible {
+  border-color: var(--n2o-accent);
+  outline: none;
+}
+
+.n2o-dashboard .n2o-dash-auth-card.is-recommended {
+  border-color: var(--n2o-accent);
+  background: var(--n2o-accent-soft);
+}
+
+.n2o-dashboard .n2o-dash-auth-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--n2o-accent-soft);
+  color: var(--n2o-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.n2o-dashboard .n2o-dash-auth-icon .svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.n2o-dashboard .n2o-dash-auth-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--n2o-ink);
+}
+
+.n2o-dashboard .n2o-dash-auth-desc {
+  font-size: 11.5px;
+  color: var(--n2o-mid);
+  line-height: 1.45;
+}
+
+.n2o-dashboard .n2o-dash-auth-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--background-modifier-border);
+  color: var(--n2o-soft);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-top: 4px;
+}
+
+.n2o-dashboard .n2o-dash-auth-tag.is-accent {
+  background: var(--n2o-accent);
+  color: var(--n2o-on-accent);
+}
+
+.n2o-dashboard .n2o-dash-auth-tag .svg-icon {
+  width: 10px;
+  height: 10px;
+}
+
+/* Morphing CTA — the primary "Connect to Notion" button slot morphs
+   in place as connectStep transitions: hero → oauth-waiting →
+   success. Keeping the slot AND the rest of the hero panel constant
+   means the user never sees the panel rebuild. Only the CTA button
+   and a small meta row below it change. */
+
+/* Waiting state — disabled button with inline spinner + label */
+.n2o-dashboard .n2o-dash-notconn-cta.is-loading,
+.n2o-dashboard .n2o-dash-notconn-cta.is-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: default;
+  opacity: 0.95;
+}
+
+.n2o-dashboard .n2o-dash-notconn-cta.is-loading {
+  background: color-mix(in srgb, var(--interactive-accent) 70%, transparent);
+  border-color: color-mix(in srgb, var(--interactive-accent) 70%, transparent);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Shimmer sweep — a soft highlight gradient slides across the button
+   left→right every 1.8s, giving the whole CTA a "working" feel that
+   doesn't depend on the dots alone. Kept subtle so it reads as a
+   loading pulse, not a banner ad. */
+.n2o-dashboard .n2o-dash-notconn-cta.is-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, #fff 22%, transparent) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  animation: n2o-cta-shimmer 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.n2o-dashboard .n2o-dash-notconn-cta.is-loading > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes n2o-cta-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.n2o-dashboard .n2o-dash-connect-cta-spinner {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* Override the generic n2o-spinner-bounce animation (which scales the
+   dot to 0 between cycles — giving the "1 dot, 2 dots, 3 dots" flash
+   the user saw) with a smooth opacity shimmer. Dots stay the same
+   size at all times; only their brightness ripples left→right.
+   `animation: none` first so :nth-child delays from the generic rule
+   don't carry over to this one. */
+.n2o-dashboard .n2o-dash-connect-cta-spinner .n2o-spinner-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--text-on-accent);
+  opacity: 0.45;
+  transform: none;
+  animation: n2o-cta-dot-shimmer 1.2s ease-in-out infinite;
+}
+
+.n2o-dashboard .n2o-dash-connect-cta-spinner .n2o-spinner-dot:nth-child(1) { animation-delay: 0s; }
+.n2o-dashboard .n2o-dash-connect-cta-spinner .n2o-spinner-dot:nth-child(2) { animation-delay: 0.18s; }
+.n2o-dashboard .n2o-dash-connect-cta-spinner .n2o-spinner-dot:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes n2o-cta-dot-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+/* Meta row below the waiting CTA: countdown + cancel */
+.n2o-dashboard .n2o-dash-notconn-action-meta {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  font-size: 11.5px;
+  color: var(--n2o-faint);
+}
+
+/*
+ * Cancel + timeout stack: Cancel on top (accent-colored link, the
+ * primary action target), timeout below in muted text (ambient).
+ * Pre-fix this was one row with a middle-dot separator; promoting
+ * Cancel to its own row (and on top) makes the back-out path the
+ * first thing the eye lands on.
+ */
+.n2o-dashboard .n2o-dash-notconn-cancel-link {
+  color: var(--interactive-accent);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.n2o-dashboard .n2o-dash-notconn-cancel-link:hover {
+  text-decoration: underline;
+}
+
+.n2o-dashboard .n2o-dash-notconn-timeout-row {
+  margin-top: 4px;
+  opacity: 0.75;
+}
+
+/* Success state — darker, more confident green (25% darkened from
+   --color-green) so the button reads as "done" rather than pale.
+   Also override mod-cta's border, which defaults to
+   --interactive-accent (the theme's red) and shows as a red outline
+   around the green fill. */
+.n2o-dashboard .n2o-dash-notconn-cta.is-success {
+  --n2o-success-bg: color-mix(in srgb, var(--color-green) 75%, black);
+  background: var(--n2o-success-bg);
+  color: #fff;
+  border-color: var(--n2o-success-bg);
+}
+.n2o-dashboard .n2o-dash-notconn-cta.is-success:hover,
+.n2o-dashboard .n2o-dash-notconn-cta.is-success:focus {
+  background: var(--n2o-success-bg);
+  border-color: var(--n2o-success-bg);
+}
+
+.n2o-dashboard .n2o-dash-notconn-cta-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.n2o-dashboard .n2o-dash-notconn-cta-check .svg-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5;
+}
+
+/* 1d — Manual token input */
+.n2o-dashboard .n2o-dash-token-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--n2o-line);
+  border-radius: 6px;
+  background: var(--n2o-panel);
+  color: var(--n2o-ink);
+  font-family: var(--n2o-font-mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+
+.n2o-dashboard .n2o-dash-token-input:focus {
+  border-color: var(--n2o-accent);
+}
+
+.n2o-dashboard .n2o-dash-token-error {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--n2o-err);
+}
+
+.n2o-dashboard .n2o-dash-token-help {
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.n2o-dashboard .n2o-dash-token-help summary {
+  cursor: pointer;
+  color: var(--n2o-soft);
+  font-size: 11.5px;
+  list-style: none;
+  outline: none;
+}
+
+.n2o-dashboard .n2o-dash-token-help summary::-webkit-details-marker { display: none; }
+
+.n2o-dashboard .n2o-dash-token-help summary:hover { color: var(--n2o-ink); }
+
+.n2o-dashboard .n2o-dash-token-help-body {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--n2o-panel);
+  border: 1px solid var(--n2o-line-soft);
+  border-radius: 6px;
+  font-size: 11.5px;
+  color: var(--n2o-mid);
+  line-height: 1.5;
+}
+
+.n2o-dashboard .n2o-dash-token-help-body p {
+  margin: 0;
+  padding: 2px 0;
+}
+
+.n2o-dashboard .n2o-dash-token-help-body a {
+  color: var(--n2o-accent);
+  text-decoration: none;
+}
+
+.n2o-dashboard .n2o-dash-token-help-body a:hover { text-decoration: underline; }
+
+.n2o-dashboard .n2o-dash-token-submit {
+  width: 100%;
+  height: 34px;
+  border-radius: 7px;
+  margin-top: 14px;
+}
+
+/* Auto-advance progress bar shown under the success-state CTA while
+   the dashboard transitions to its main view. Kept narrow so it
+   reads as a timer, not a section divider. */
+.n2o-dashboard .n2o-dash-connect-advance {
+  width: 160px;
+  height: 2px;
+  background: var(--n2o-line-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 10px auto 0;
+}
+
+.n2o-dashboard .n2o-dash-connect-advance-fill {
+  height: 100%;
+  background: color-mix(in srgb, var(--color-green) 75%, black);
+  width: 0;
+  animation: n2o-connect-advance 2s linear forwards;
+}
+
+@keyframes n2o-connect-advance {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+/*
+ * P1 #29 - Honour prefers-reduced-motion.
+ *
+ * Users with vestibular disorders / motion sensitivity can opt out of
+ * animation and transition motion in OS settings (macOS: Reduce
+ * motion, Windows: Show animations off). The 2026 web standard is to
+ * collapse animations to ~1ms instead of disabling them outright,
+ * which preserves any layout/state changes that an animation triggers
+ * (e.g. accordion content switching) while removing the visible
+ * motion.
+ *
+ * Scoped to [class*="n2o-"] so we only affect our own elements -
+ * Obsidian's core UI has its own motion handling we should not
+ * override.
+ *
+ * !important is necessary to win against the inline-keyframe specific
+ * durations (e.g. animation: pulse 2s) defined throughout this file.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [class*="n2o-"],
+  [class*="n2o-"]::before,
+  [class*="n2o-"]::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Failed-media card (#1780): expandable, per-item, alarm vs info ─── */
+
+/* The card holds a <details>, so it lays out as a block, not the centered flex
+   row the plain issue card uses. */
+.n2o-dashboard .n2o-dash-media-card {
+  display: block;
+  padding: 0;
+}
+
+/* Permanent failures are not an alarm - the source is just gone. Quiet the red
+   down to a neutral info tone so it stops crying wolf. */
+.n2o-dashboard .n2o-dash-media-card-info {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-left: 3px solid var(--text-muted);
+}
+
+.n2o-dashboard .n2o-dash-media-details {
+  width: 100%;
+}
+
+.n2o-dashboard .n2o-dash-media-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Custom disclosure caret so it reads consistently across platforms. */
+.n2o-dashboard .n2o-dash-media-summary::-webkit-details-marker {
+  display: none;
+}
+.n2o-dashboard .n2o-dash-media-summary::before {
+  content: '';
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--text-muted);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.12s ease;
+}
+.n2o-dashboard .n2o-dash-media-details[open] .n2o-dash-media-summary::before {
+  transform: rotate(90deg);
+}
+
+.n2o-dashboard .n2o-dash-media-list {
+  padding: 2px 12px 10px 27px;
+}
+
+.n2o-dashboard .n2o-dash-media-row {
+  padding: 8px 0;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.n2o-dashboard .n2o-dash-media-row-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-media-note {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+.n2o-dashboard .n2o-dash-media-note:hover {
+  text-decoration: underline;
+}
+
+.n2o-dashboard .n2o-dash-media-kind {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.n2o-dashboard .n2o-dash-media-url {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10.5px;
+  color: var(--text-faint);
+  background: transparent;
+  padding: 0;
+}
+
+.n2o-dashboard .n2o-dash-media-reason {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.n2o-dashboard .n2o-dash-media-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.n2o-dashboard .n2o-dash-media-retrynote {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.n2o-dashboard .n2o-dash-media-dismiss {
+  color: var(--text-faint);
+}
+

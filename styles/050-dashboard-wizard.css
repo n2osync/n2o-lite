@@ -1,0 +1,2754 @@
+/* ── Dashboard ─────────────────────────────────────── */
+
+.view-content.n2o-dashboard,
+.n2o-dashboard {
+  padding: 0 !important;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/*
+ * P1 #20 - Inverted gutter rule: body content opts INTO the gutter
+ * by being on this list, instead of getting it by default and having
+ * to opt out via :not(). Adding a new direct child of .n2o-dashboard
+ * no longer silently gets 12px padding - it has to be added here
+ * intentionally. avoiding-drift.md rule #2.
+ *
+ * Header (.n2o-dash-frame-header) and bottom shell (.n2o-dash-bottom-shell)
+ * are deliberately absent: they extend edge-to-edge of the sidebar.
+ */
+.n2o-dashboard > .n2o-dash-init,
+.n2o-dashboard > .n2o-dash-error,
+.n2o-dashboard > .n2o-dash-notconn,
+.n2o-dashboard > .n2o-dash-hybrid,
+.n2o-dashboard > .n2o-dash-progress-ribbon,
+.n2o-dashboard > .n2o-dash-done-step,
+.n2o-dashboard > .n2o-dash-update-banner,
+.n2o-dashboard > .n2o-dash-postsetup,
+.n2o-dashboard > .n2o-dash-connect-flow {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/*
+ * Bottom shell (tier banner + minfooter) and frame header span the full
+ * sidebar width. They are NOT in the gutter-inset list above so they
+ * already get 0 horizontal padding by default; no override needed.
+ * Horizontal breathing room for their children is applied on the
+ * children themselves (banner margin, footer padding).
+ */
+
+.n2o-dashboard > .n2o-dash-postsetup,
+.n2o-dashboard > .n2o-dash-connect-flow {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+/* Hybrid hero owns its own internal breathing room (gauge-wrap padding +
+   gradient bg). Flush it against the sticky frame header so there is no
+   blank strip between the white header bar and the hero's tinted
+   surface. */
+.n2o-dashboard > .n2o-dash-hybrid {
+  padding-top: 0;
+  padding-bottom: 12px;
+}
+
+/* Sticky frame header — flush with sidebar edges, N₂O wordmark + workspace + kebab */
+.n2o-dashboard > .n2o-dash-frame-header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--background-primary);
+  padding: 10px 12px;
+  margin: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--background-modifier-border) 50%, transparent);
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-frame-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.4px;
+  color: var(--text-normal);
+}
+
+.n2o-dashboard .n2o-dash-frame-wordmark-accent {
+  font-size: 10px;
+  color: var(--interactive-accent);
+  margin: 0 1px;
+}
+
+.n2o-dashboard .n2o-dash-frame-sep {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.n2o-dashboard .n2o-dash-frame-workspace {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-frame-spacer {
+  flex: 1;
+}
+
+.n2o-dashboard .n2o-dash-frame-kebab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-frame-kebab:hover,
+.n2o-dashboard .n2o-dash-frame-kebab:focus,
+.n2o-dashboard .n2o-dash-frame-kebab:focus-visible {
+  background: color-mix(in srgb, var(--text-normal) 8%, transparent);
+  color: var(--text-normal);
+  outline: none;
+}
+
+.n2o-dashboard .n2o-dash-frame-kebab .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Sticky minimal footer — flush with sidebar edges, gear + version */
+/* ─── Bottom shell: tier banner + minfooter as one unit ─────
+   The two elements are wrapped so a single margin-top: auto pushes
+   both to the bottom. Two separate margin-top: autos would split the
+   remaining flex space between them (142px gap bug). */
+.n2o-dashboard > .n2o-dash-bottom-shell {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* ─── Tier banner ──────────────────────────────────────────────
+   The one line about the full edition. Sits just above the
+   minfooter, styled with the amber accent so it reads as chrome
+   rather than content. */
+.n2o-dashboard .n2o-dash-bottom-shell .n2o-dash-tier-banner {
+  /* 10px bottom margin gives the banner breathing room above the
+     footer divider — previously 0 made them visually snap together. */
+  margin: 8px 12px 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-normal);
+  background: color-mix(in srgb, var(--n2o-accent) 8%, var(--background-primary));
+  border: 1px dashed color-mix(in srgb, var(--n2o-accent) 45%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-tier-banner.is-pro,
+.n2o-dashboard .n2o-dash-tier-banner.is-lifetime {
+  background: color-mix(in srgb, var(--n2o-ok) 10%, var(--background-primary));
+  border-color: color-mix(in srgb, var(--n2o-ok) 45%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-tier-banner .n2o-dash-tier-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  color: var(--n2o-accent);
+  background: color-mix(in srgb, var(--n2o-accent) 15%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-tier-banner .n2o-dash-tier-icon .svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.n2o-dashboard .n2o-dash-tier-banner.is-pro .n2o-dash-tier-icon,
+.n2o-dashboard .n2o-dash-tier-banner.is-lifetime .n2o-dash-tier-icon {
+  color: var(--n2o-ok);
+  background: color-mix(in srgb, var(--n2o-ok) 15%, transparent);
+}
+
+.n2o-dashboard .n2o-dash-tier-banner .n2o-dash-tier-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-tier-banner .n2o-dash-tier-title {
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.n2o-dashboard .n2o-dash-tier-banner .n2o-dash-tier-sub {
+  color: var(--text-muted);
+}
+
+.n2o-dashboard .n2o-dash-tier-banner .n2o-dash-tier-cta {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--n2o-accent);
+  color: var(--n2o-on-accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.n2o-dashboard .n2o-dash-tier-banner .n2o-dash-tier-cta:hover {
+  background: var(--n2o-accent-hi);
+}
+
+.n2o-dashboard .n2o-dash-minfooter {
+  /* Sticky-pinned to the bottom of the scroll container, mirroring the
+     frame-header at the top. The tier banner above it sits inside the
+     same bottom-shell but is NOT sticky — it scrolls with content when
+     the sidebar gets tall, so only the minfooter chrome is pinned. */
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  background: var(--background-primary);
+  padding: 6px 12px 10px;
+  border-top: 1px solid color-mix(in srgb, var(--background-modifier-border) 50%, transparent);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.n2o-dashboard .n2o-dash-minfooter .n2o-dash-minfooter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px; /* matches the gear button height */
+}
+
+/* Empty placeholder below the content row — intentionally blank.
+   Height equals the content row so the footer is exactly doubled. */
+.n2o-dashboard .n2o-dash-minfooter .n2o-dash-minfooter-pad {
+  min-height: 28px;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-gear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 28x28 matches Obsidian's ribbon action buttons so the footer gear
+     sits at the same visual weight as the app's native controls. */
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-gear:hover {
+  background: color-mix(in srgb, var(--text-normal) 8%, transparent);
+  color: var(--text-normal);
+}
+
+.n2o-dashboard .n2o-dash-minfooter-gear .svg-icon {
+  /* 18px — Obsidian's default Lucide icon size in the ribbon and
+     settings affordances. Previously 16px was a hair smaller than
+     every adjacent native icon. */
+  width: 18px;
+  height: 18px;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dashboard .n2o-dash-minfooter-version {
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  /* Up from 11px so the version label reads as a normal caption next
+     to the bigger gear, not a footnote-tiny aside. */
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.n2o-dash-init {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+.n2o-dash-init-text {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+/* ── Loading Spinner ───────────────────────────── */
+
+.n2o-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.n2o-spinner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: n2o-spinner-bounce 1.2s ease-in-out infinite;
+}
+
+.n2o-spinner-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.n2o-spinner-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.n2o-spinner-dot-sm {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: n2o-spinner-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes n2o-spinner-bounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Dashboard Error State ─── */
+
+.n2o-dash-error {
+  padding: 16px;
+  margin: 12px 0;
+  background: color-mix(in srgb, var(--text-error) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-error) 25%, transparent);
+  border-radius: 8px;
+}
+
+.n2o-dash-error-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-error);
+  margin-bottom: 6px;
+}
+
+.n2o-dash-error-msg {
+  font-size: 13px;
+  color: var(--text-normal);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.n2o-dash-error-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* ── Header ─── */
+
+.n2o-dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 8px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 8px;
+}
+
+.n2o-dash-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.n2o-dash-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.n2o-dash-dot--idle { background: var(--text-success); }
+.n2o-dash-dot--syncing {
+  background: var(--interactive-accent);
+  animation: n2o-pulse 1.2s ease-in-out infinite;
+}
+.n2o-dash-dot--paused { background: var(--text-warning, var(--color-yellow)); }
+.n2o-dash-dot--error { background: var(--text-error); }
+
+@keyframes n2o-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.n2o-dash-status-text {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}.n2o-dash-badge--expired {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.n2o-dash-badge--pro {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}/* ── Stats Bar (legacy, kept for reference) ─── */
+
+.n2o-dash-stats {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Update Banner ─── */
+
+.n2o-dash-update-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  background: var(--background-modifier-success);
+  font-size: var(--font-ui-small);
+  flex-wrap: wrap;
+}
+
+.n2o-dash-update-text {
+  font-weight: 600;
+}
+
+.n2o-dash-update-current {
+  color: var(--text-muted);
+}
+
+.n2o-dash-update-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+
+.n2o-dash-btn-muted {
+  opacity: 0.7;
+}
+
+/* ── Settings Warning ─── */
+
+.n2o-settings-warning {
+  padding: 10px 14px;
+  margin: 8px 0 12px;
+  border-radius: 6px;
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent-inverted, var(--text-normal));
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+/* Inline link mention chip (#1724). Notion renders an inline link mention as a
+   small favicon followed by the linked title, using metadata the OFFICIAL API
+   returns (mention.link_mention). This mirrors it: favicon + underlined title. */
+a.n2o-link-mention {
+  text-decoration: none;
+  color: var(--text-normal);
+  white-space: normal;
+}
+.n2o-link-mention-provider {
+  color: var(--text-muted);
+  margin-right: 0.35em;
+}
+.n2o-link-mention-title {
+  border-bottom: 0.05em solid var(--text-faint);
+}
+a.n2o-link-mention:hover .n2o-link-mention-title {
+  border-bottom-color: var(--text-muted);
+}
+.n2o-link-mention-icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+  margin-right: 0.3em;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+/* ── Bookmark Card (Notion-style) ─── */
+
+.n2o-bookmark {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  overflow: visible;
+  margin: 4px 0;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.n2o-bookmark:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-bookmark a {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+.n2o-bookmark-info {
+  flex: 1;
+  padding: 8px 12px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.n2o-bookmark-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.n2o-bookmark-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* The user's caption sits BELOW the card, like Notion: plain gray text. */
+.n2o-bookmark-caption {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 4px 0 6px;
+}
+
+.n2o-bookmark-url {
+  font-size: 12px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.n2o-bookmark-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+/* Cover on the LEFT, taller and squarer - matches how Notion renders a
+   bookmark card (cover left, text right). Was 230x90 on the right. */
+.n2o-bookmark-cover {
+  order: -1;
+  width: 150px;
+  min-height: 118px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+  border-radius: 10px 0 0 10px;
+}
+
+/* Hover preview — full image + full description.
+   Uses fixed positioning to escape column overflow clipping. */
+/* Preview is hidden by default (PostProcessor detaches it from inline position
+   and appends to document.body on hover, escaping callout stacking contexts) */
+.n2o-bookmark-preview {
+  display: none;
+}
+
+.n2o-bookmark-preview-visible {
+  display: block;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.theme-light .n2o-bookmark-preview-visible {
+  background: #ffffff;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.n2o-bookmark-preview-img {
+  width: 100%;
+  height: auto;
+  max-height: 350px;
+  object-fit: contain;
+  display: block;
+  background: #000;
+}
+
+.n2o-bookmark-preview-text {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-normal);
+  line-height: 1.6;
+}
+
+.n2o-bookmark-preview-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.n2o-bookmark-preview-desc {
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.n2o-bookmark-preview-url {
+  font-size: 12px;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Internal Link Preview Card ─── */
+
+.n2o-preview-card {
+  position: fixed;
+  width: 380px;
+  max-width: 90vw;
+  max-height: 70vh;
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.theme-light .n2o-preview-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.n2o-preview-card-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.n2o-preview-card[data-placement="below"] {
+  transform: translateY(-4px);
+}
+
+.n2o-preview-card-visible[data-placement="below"] {
+  transform: translateY(0);
+}
+
+.n2o-preview-banner {
+  width: 100%;
+  max-height: 160px;
+  overflow: hidden;
+}
+
+.n2o-preview-banner img {
+  width: 100%;
+  height: auto;
+  max-height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.n2o-preview-content {
+  padding: 12px 16px 14px;
+}
+
+.n2o-preview-title {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.n2o-preview-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.n2o-preview-excerpt {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.n2o-preview-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.n2o-preview-tag {
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.n2o-preview-time {
+  color: var(--text-faint);
+  margin-left: auto;
+}
+
+/* ── Push Confirm Modal ─── */
+
+.n2o-push-confirm-warning {
+  color: var(--text-error);
+  font-size: var(--font-ui-small);
+}
+
+/* ── Status Hero ─── */
+
+.n2o-dash-hero {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 14px;
+}
+
+.n2o-dash-hero .n2o-dash-header {
+  margin-bottom: 4px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.n2o-dash-hero-scope {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dash-hero-empty {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-style: italic;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.n2o-dash-hero-empty .n2o-dash-btn-primary {
+  width: 100%;
+}
+
+.n2o-dash-hero-last {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+/* ── Info Box (first-sync guidance) ─── */
+
+.n2o-dash-info-box {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--interactive-accent) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* ── Advanced Section ─── */
+
+/* ── Discovery Section ─── */
+
+
+.n2o-dash-advanced-content {
+  margin: 12px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--background-modifier-border);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* ── Compact Account Line ─── */
+
+.n2o-dash-account-compact {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-align: center;
+  padding: 4px 0 0 0;
+}
+
+/* ── Quick Actions ─── */
+
+.n2o-dash-actions {
+  margin-bottom: 12px;
+}
+
+.n2o-dash-btn-primary {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.n2o-dash-btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.n2o-dash-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.n2o-dash-btn-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Three-button action row: all buttons equal width */
+.n2o-dash-action-trio > button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Override primary full-width when inside the trio */
+.n2o-dash-action-trio > .n2o-dash-btn-primary {
+  width: auto;
+}
+
+.n2o-dash-separator {
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  margin: 8px 0;
+}
+
+.n2o-dash-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+.n2o-dash-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 2px 0 4px;
+}
+
+.n2o-dash-btn-secondary {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.n2o-dash-btn-secondary:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-dash-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.n2o-dash-btn-icon .svg-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.n2o-dash-btn-tiny {
+  padding: 2px 8px;
+  font-size: 11px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.n2o-dash-btn-tiny:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+
+/* ── Cancel Button ─── */
+
+.n2o-dash-btn-cancel {
+  width: 100%;
+  margin-top: 4px;
+  color: var(--text-error);
+  border-color: color-mix(in srgb, var(--text-error) 30%, var(--background-modifier-border));
+}
+
+.n2o-dash-btn-cancel:hover {
+  background: color-mix(in srgb, var(--text-error) 10%, transparent);
+}
+
+/* ── Focus-visible — keyboard-only ring for all dashboard buttons ─── */
+
+.n2o-dash-btn-primary:focus-visible,
+.n2o-dash-btn-secondary:focus-visible,
+.n2o-dash-btn-tiny:focus-visible,
+.n2o-dash-btn-cancel:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+/* ── Progress Bar ─── */
+
+.n2o-dash-progress {
+  margin-top: 6px;
+}
+
+.n2o-dash-progress-track {
+  height: 3px;
+  background: var(--background-modifier-border);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.n2o-dash-progress-bar {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.n2o-dash-progress-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Last Sync Summary ─── */
+
+.n2o-dash-last-sync {
+  padding: 8px 0;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.n2o-dash-last-sync-line {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dash-alert {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.n2o-dash-alert--error {
+  background: color-mix(in srgb, var(--text-error) 12%, transparent);
+  color: var(--text-error);
+}
+
+.n2o-dash-alert--info {
+  background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+  color: var(--interactive-accent);
+}
+
+.n2o-dash-alert--warn {
+  background: color-mix(in srgb, var(--text-warning, var(--color-yellow)) 12%, transparent);
+  color: var(--text-warning, var(--color-yellow));
+}
+
+/* ── Issues & Attention ─── */
+
+.n2o-dash-issues {
+  padding: 8px;
+  margin: 8px 0;
+  background: color-mix(in srgb, var(--text-warning, var(--color-yellow)) 8%, transparent);
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--text-warning, var(--color-yellow)) 20%, transparent);
+}
+
+.n2o-dash-issues-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-warning, var(--color-yellow));
+}
+
+.n2o-dash-issues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.n2o-dash-issue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 2px 0;
+  color: var(--text-normal);
+}
+
+/* ── Collapsible Sections ─── */
+
+.n2o-dash-collapsible {
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+}
+
+.n2o-dash-collapsible > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.n2o-dash-collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.n2o-dash-collapsible > summary:hover {
+  color: var(--text-normal);
+}
+
+.n2o-dash-chevron {
+  font-size: 8px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.n2o-dash-collapsible[open] > summary .n2o-dash-chevron {
+  transform: rotate(90deg);
+}
+
+.n2o-dash-empty {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-style: italic;
+  padding: 4px 0 8px 0;
+}
+
+/* ── Sync History ─── */
+
+.n2o-dash-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-bottom: 8px;
+}
+
+.n2o-dash-history-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  padding: 2px 0;
+}
+
+.n2o-dash-hdot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.n2o-dash-hdot--ok { background: var(--text-success); }
+.n2o-dash-hdot--error { background: var(--text-error); }
+
+.n2o-dash-htime {
+  color: var(--text-muted);
+  min-width: 44px;
+}
+
+.n2o-dash-hdur {
+  color: var(--text-faint);
+  min-width: 36px;
+}
+
+.n2o-dash-hcounts {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dash-hcounts--error {
+  color: var(--text-error);
+}
+
+/* ── Connection Indicator ─── */
+
+.n2o-dash-connection {
+  font-size: 11px;
+  padding: 2px 0 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dash-connection--ok {
+  color: var(--text-success);
+}
+
+.n2o-dash-connection--warn {
+  color: var(--text-warning, var(--color-yellow));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.n2o-dash-connect-btn {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.n2o-dash-connect-btn:hover {
+  opacity: 0.9;
+}
+
+/* ── Sync Scope ─── */
+
+.n2o-dash-scope {
+  padding: 4px 0 8px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 8px;
+}
+
+.n2o-dash-scope-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-normal);
+}
+
+.n2o-dash-scope-change {
+  font-size: 12px;
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.n2o-dash-scope-change:hover {
+  text-decoration: none;
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+/* ── Scope Items (collapsible chip summary) ──── */
+
+.n2o-dash-scope-details {
+  margin-top: 6px;
+}
+
+.n2o-dash-scope-summary {
+  display: flex;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.n2o-dash-scope-summary::-webkit-details-marker { display: none; }
+
+.n2o-dash-scope-chip {
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  line-height: 1.4;
+}
+
+.n2o-dash-scope-chip--db {
+  background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+  color: var(--interactive-accent);
+}
+
+.n2o-dash-scope-chip--page {
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+}
+
+.n2o-dash-scope-body {
+  margin-top: 6px;
+  padding: 6px 0;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.n2o-dash-scope-group + .n2o-dash-scope-group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--background-modifier-border-hover);
+}
+
+.n2o-dash-scope-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 11.5px;
+}
+
+.n2o-dash-scope-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.n2o-dash-scope-icon--db {
+  background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+}
+
+.n2o-dash-scope-icon--page {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-dash-scope-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.n2o-dash-scope-count {
+  font-size: 10px;
+  color: var(--text-faint);
+  background: var(--background-modifier-hover);
+  padding: 1px 5px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* Live mode during a sync: count cell shows "synced / total" and reads
+ * in the accent colour so the user can spot live progress in the
+ * scopecard at a glance. */
+.n2o-dash-scope-count.is-live {
+  color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.n2o-dash-scope-overflow {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  padding-left: 18px;
+}
+
+.n2o-dash-scope-folder {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+/* ── Button States ─── */
+
+.n2o-dash-btn-secondary--active {
+  background: color-mix(in srgb, var(--text-warning, var(--color-yellow)) 15%, var(--background-secondary));
+  border-color: var(--text-warning, var(--color-yellow));
+  color: var(--text-warning, var(--color-yellow));
+}
+
+/* ── Sync Mode Indicator ─── */
+
+.n2o-dash-sync-mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0 8px 0;
+}
+
+.n2o-dash-sync-mode-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.n2o-dash-sync-mode-toggle {
+  font-size: 11px;
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.n2o-dash-sync-mode-toggle:hover {
+  text-decoration: underline;
+}
+
+/* ── Automation Section ─── */
+
+.n2o-dash-automation {
+  margin-bottom: 4px;
+}
+
+.n2o-dash-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.n2o-dash-toggle-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-dash-toggle-label {
+  font-size: 12px;
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.n2o-dash-toggle-desc {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-top: 1px;
+}
+
+.n2o-dash-toggle-row .checkbox-container {
+  flex-shrink: 0;
+}
+
+/* ── Automation toggle: label + info tooltip, with a disabled state ── */
+.n2o-dash-toggle-labelrow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.n2o-dash-info {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-faint);
+  cursor: help;
+}
+
+.n2o-dash-info:hover {
+  color: var(--text-accent);
+}
+
+.n2o-dash-info svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Direction doesn't apply: dim the row + show the reason in the description. */
+.n2o-dash-toggle-disabled {
+  opacity: 0.5;
+}
+
+.n2o-dash-toggle-disabled .checkbox-container {
+  pointer-events: none;
+}
+
+/* ── Recent Activity Feed ─── */
+
+.n2o-dash-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-bottom: 8px;
+}
+
+.n2o-dash-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 3px 0;
+}
+
+.n2o-dash-activity-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.n2o-dash-activity-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-dash-activity-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-normal);
+}
+
+.n2o-dash-activity-time {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+
+.n2o-dash-account {
+  padding: 8px 0;
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+}
+
+.n2o-dash-account-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}.n2o-dash-account-cta {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.n2o-dash-account-cta:hover {
+  opacity: 0.9;
+}
+
+/* ── Toolbar (settings/views/help) ─── */
+
+/* ── System Health ─── */
+
+.n2o-dash-health-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 4px 0 0 0;
+}
+
+.n2o-health-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.n2o-health-dot--ok { background: var(--text-success); }
+.n2o-health-dot--warn { background: var(--text-warning, var(--color-yellow)); }
+.n2o-health-dot--error { background: var(--text-error); }
+
+.n2o-dash-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 0 4px 0;
+  margin-top: 4px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.n2o-dash-toolbar-labeled {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.n2o-dash-toolbar-labeled:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.n2o-dash-toolbar-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.n2o-dash-toolbar-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── History Footer ─── */
+
+.n2o-dash-history-footer {
+  padding: 4px 0 8px 0;
+  text-align: center;
+}
+
+.n2o-dash-link {
+  font-size: 11px;
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.n2o-dash-link:hover {
+  text-decoration: underline;
+}
+
+
+.n2o-pro-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  vertical-align: middle;
+  margin-left: 6px;
+  letter-spacing: 0.5px;
+}
+
+.n2o-pro-hint {
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.n2o-upgrade-prompt {
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--interactive-accent);
+}
+
+.n2o-upgrade-prompt strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: var(--text-normal);
+}
+
+.n2o-upgrade-prompt ul {
+  margin: 8px 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.n2o-upgrade-prompt ul li {
+  padding: 2px 0;
+}
+
+.n2o-upgrade-prompt a {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--interactive-accent);
+  text-decoration: none;
+}
+
+.n2o-upgrade-prompt a:hover {
+  text-decoration: underline;
+}
+
+/* Upgrade modal (Try N2O Sync Pro) */
+
+.modal:has(.n2o-upgrade-modal) {
+  width: min(540px, 92vw);
+  max-width: 540px;
+}
+
+.n2o-upgrade-modal {
+  padding: 22px 24px 24px;
+}
+
+.n2o-um-header {
+  text-align: center;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.n2o-um-logo {
+  display: block;
+  height: 48px;
+  width: auto;
+  margin: 0 auto 14px;
+}
+
+.n2o-um-badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.n2o-um-title {
+  margin: 0 0 8px;
+  font-size: 1.6em;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--text-normal);
+}
+
+.n2o-um-subtitle {
+  max-width: 40ch;
+  margin: 0 auto;
+  font-size: 0.95em;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.n2o-um-features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.n2o-um-feature {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.n2o-um-feature-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 13%, transparent);
+}
+
+.n2o-um-feature-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.n2o-um-feature-title {
+  margin-bottom: 2px;
+  font-size: 0.98em;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.n2o-um-feature-detail {
+  font-size: 0.87em;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.n2o-um-trial {
+  margin-top: 20px;
+  padding: 13px 15px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--interactive-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
+}
+
+.n2o-um-trial-lead {
+  margin: 0;
+  font-size: 0.9em;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-normal);
+}
+
+.n2o-um-trial-after {
+  margin: 5px 0 0;
+  font-size: 0.84em;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.n2o-um-note {
+  margin: 14px 0 0;
+  font-size: 0.78em;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.n2o-upgrade-status {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--background-secondary);
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+.n2o-upgrade-actions {
+  margin-top: 18px;
+}
+
+.n2o-upgrade-actions .mod-cta {
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 0.95em;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.n2o-upgrade-learnmore {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.n2o-upgrade-learnmore a {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.n2o-upgrade-learnmore a:hover {
+  color: var(--interactive-accent);
+  text-decoration: underline;
+}
+
+/* Email */
+.n2o-email-section {
+  margin: 8px 0 16px 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.n2o-skip-link {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.n2o-skip-link a {
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.n2o-skip-link a:hover {
+  color: var(--text-normal);
+  text-decoration: underline;
+}
+
+.n2o-wizard-status {
+  min-height: 20px;
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+.n2o-wizard-next-steps,
+.n2o-wizard-tips {
+  margin: 12px 0;
+}
+
+.n2o-wizard-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 12px;
+}
+
+.n2o-wizard-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.n2o-wizard-step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  border: 2px solid var(--background-modifier-border);
+  color: var(--text-faint);
+  background: transparent;
+  transition: all 0.15s ease;
+}
+
+.n2o-wizard-step.is-active .n2o-wizard-step-number {
+  border-color: var(--interactive-accent);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.n2o-wizard-step.is-complete .n2o-wizard-step-number {
+  border-color: var(--interactive-accent);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.n2o-wizard-step-label {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.n2o-wizard-step.is-active .n2o-wizard-step-label {
+  color: var(--text-normal);
+  font-weight: 600;
+}
+
+.n2o-wizard-step.is-complete .n2o-wizard-step-label {
+  color: var(--text-muted);
+}
+
+.n2o-wizard-step-line {
+  flex: 1;
+  height: 2px;
+  min-width: 40px;
+  background: var(--background-modifier-border);
+  margin: 0 8px;
+  margin-bottom: 20px;
+  transition: background 0.15s ease;
+}
+
+.n2o-wizard-step-line.is-complete {
+  background: var(--interactive-accent);
+}
+
+.n2o-wizard-footer {
+  margin-top: 12px;
+}
+
+.n2o-wizard-note {
+  font-size: 13px;
+  color: var(--text-warning, var(--color-yellow));
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--text-warning, var(--color-yellow)) 8%, transparent);
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+/* ── Wizard Card Choice ──────────────────────────── */
+
+.n2o-setup-wizard-modal {
+  height: auto;
+  max-height: 80vh;
+  padding: 24px 28px 20px;
+}
+
+.n2o-wizard-brand {
+  text-align: center;
+  padding: 6px 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-normal);
+}
+
+.n2o-wizard-subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 6px;
+}
+
+.n2o-wizard-card-row {
+  display: flex;
+  gap: 14px;
+  margin: 16px 0 0;
+}
+
+.n2o-wizard-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 18px 16px;
+  border: 1.5px solid var(--background-modifier-border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  position: relative;
+}
+
+.n2o-wizard-card:hover {
+  border-color: var(--interactive-accent);
+  background-color: color-mix(in srgb, var(--interactive-accent) 4%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+  transform: translateY(-2px);
+}
+
+.n2o-wizard-card--recommended {
+  border-color: var(--interactive-accent);
+  background-color: color-mix(in srgb, var(--interactive-accent) 3%, transparent);
+}
+
+/* ── Card icon circle ── */
+.n2o-wizard-card-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.n2o-wizard-card-icon-wrap svg {
+  width: 22px;
+  height: 22px;
+}
+
+.n2o-wizard-card-icon-wrap--accent {
+  background: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+  color: var(--interactive-accent);
+}
+
+.n2o-wizard-card:hover .n2o-wizard-card-icon-wrap {
+  background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+  color: var(--interactive-accent);
+}
+
+.n2o-wizard-card-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.n2o-wizard-card-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* ── Card footer tag ── */
+.n2o-wizard-card-footer {
+  margin-top: 14px;
+}
+
+.n2o-wizard-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.n2o-wizard-card-tag svg {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-wizard-card-tag--muted {
+  color: var(--text-faint);
+  background: var(--background-secondary);
+}
+
+/* ── Wizard Discovery Progress ──────────────────── */
+
+.n2o-discovery-progress {
+  padding: 2px 0;
+}
+
+.n2o-discovery-progress-text {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.n2o-discovery-progress-names {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-discovery-progress-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--background-modifier-border);
+  overflow: hidden;
+}
+
+.n2o-discovery-progress-bar {
+  height: 100%;
+  width: 30%;
+  border-radius: 2px;
+  background: var(--interactive-accent);
+  animation: n2o-discovery-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes n2o-discovery-slide {
+  0% { transform: translateX(-100%); width: 30%; }
+  50% { transform: translateX(150%); width: 40%; }
+  100% { transform: translateX(400%); width: 30%; }
+}
+
+/* ── Tree Picker Discovery Progress ──────────────── */
+
+.n2o-tree-picker .n2o-discovery-progress {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.n2o-tree-picker .n2o-discovery-progress-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 16px;
+}
+
+
+.n2o-tree-picker .n2o-discovery-progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.n2o-discovery-cancel-btn {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.n2o-discovery-cancel-btn:hover {
+  color: var(--text-normal);
+  border-color: var(--text-muted);
+}
+
+.n2o-wizard-back-link {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.n2o-wizard-back-link:hover {
+  color: var(--text-normal);
+}
+
+.n2o-wizard-back-centered {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* ── Wizard OAuth Waiting State ────────────────── */
+
+.n2o-wizard-wait {
+  text-align: center;
+  padding: 24px 0 8px;
+}
+
+.n2o-wizard-wait-spinner {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.n2o-wizard-wait-spinner .n2o-spinner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  animation: n2o-wait-pulse 1.4s ease-in-out infinite both;
+}
+
+.n2o-wizard-wait-spinner .n2o-spinner-dot:nth-child(1) { animation-delay: 0s; }
+.n2o-wizard-wait-spinner .n2o-spinner-dot:nth-child(2) { animation-delay: 0.2s; }
+.n2o-wizard-wait-spinner .n2o-spinner-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes n2o-wait-pulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.n2o-wizard-wait-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.n2o-wizard-wait-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.n2o-wizard-wait-status {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+/* ── Wizard Token Input ────────────────────────── */
+
+.n2o-wizard-token-wrap {
+  margin: 12px 0 14px;
+}
+
+.n2o-wizard-token-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: var(--font-monospace);
+  letter-spacing: 0.5px;
+  border: 1.5px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  transition: border-color 0.2s;
+}
+
+.n2o-wizard-token-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+}
+
+.n2o-wizard-token-input::placeholder {
+  color: var(--text-faint);
+  font-family: var(--font-monospace);
+}
+
+/* ── Wizard Collapsible Help ───────────────────── */
+
+.n2o-wizard-help {
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+
+.n2o-wizard-help summary {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.n2o-wizard-help summary:hover {
+  color: var(--text-normal);
+}
+
+.n2o-wizard-help-body {
+  padding: 8px 12px;
+  margin-top: 6px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.n2o-wizard-help-body p {
+  margin: 2px 0;
+}
+
+.n2o-wizard-help-body a {
+  color: var(--interactive-accent);
+}
+
+/* ── Wizard Done Page ──────────────────────────── */.n2o-wizard-done-tips {
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.n2o-wizard-done-tips p {
+  margin: 0;
+}
+
+.n2o-wizard-help-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 8px;
+}
+
+.n2o-wizard-help-footer a {
+  color: var(--interactive-accent);
+}
+
+/* ── Dry Run Preview Modal ────────────────────────── */
+
+.n2o-dry-run-modal {
+  min-width: 500px;
+  max-width: 700px;
+}
+
+.n2o-dry-run-summary {
+  margin-bottom: 12px;
+}
+
+.n2o-dry-run-summary p {
+  margin: 2px 0;
+  font-size: 14px;
+}
+
+.n2o-dry-run-duration {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.n2o-dry-run-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 16px;
+}
+
+.n2o-dry-run-group h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 10px 0 4px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.n2o-dry-run-group:first-child h4 {
+  margin-top: 0;
+}
+
+.n2o-dry-run-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+.n2o-dry-run-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  min-width: 60px;
+  text-align: center;
+}
+
+.n2o-dry-run-badge--created {
+  background: color-mix(in srgb, var(--text-success) 20%, transparent);
+  color: var(--text-success);
+}
+
+.n2o-dry-run-badge--updated {
+  background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+  color: var(--interactive-accent);
+}
+
+.n2o-dry-run-badge--orphaned {
+  background: color-mix(in srgb, var(--text-warning, var(--color-yellow)) 20%, transparent);
+  color: var(--text-warning, var(--color-yellow));
+}
+
+.n2o-dry-run-badge--conflict {
+  background: color-mix(in srgb, var(--text-error) 20%, transparent);
+  color: var(--text-error);
+}
+
+.n2o-dry-run-badge--unchanged {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.n2o-dry-run-item-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-dry-run-item-path {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+/* ── Template Management ────────────────────────────── */
+
+.n2o-template-list-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 0 8px;
+}
+
+.n2o-template-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 6px;
+  letter-spacing: 0.3px;
+}
+
+.n2o-template-badge-builtin {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.n2o-template-badge-vault {
+  background: var(--background-modifier-success, #28a745);
+  color: var(--text-on-accent, #fff);
+}
+
+.n2o-dry-run-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ── Manage Base Views Modal ────────────────────── */
+
+.n2o-base-views-modal {
+  min-width: 550px;
+  max-width: 750px;
+}
+
+.n2o-base-views-modal h2 {
+  margin-top: 0;
+}
+
+.n2o-base-views-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.n2o-base-views-empty {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.n2o-base-views-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.n2o-base-views-section {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.n2o-base-views-summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  background: var(--background-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.n2o-base-views-summary::-webkit-details-marker {
+  display: none;
+}
+
+.n2o-base-views-summary:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-base-views-chevron {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.n2o-base-views-chevron svg {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-base-views-section[open] > .n2o-base-views-summary .n2o-base-views-chevron {
+  transform: rotate(90deg);
+}
+
+.n2o-base-views-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.n2o-base-views-body {
+  padding: 8px 14px 14px 14px;
+}
+
+.n2o-base-views-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.1s ease;
+}
+
+.n2o-base-views-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-base-views-type-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: center;
+}
+
+.n2o-base-views-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.n2o-base-views-default-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.n2o-base-views-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.n2o-base-views-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.n2o-base-views-action-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.n2o-base-views-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.n2o-base-views-action-delete:hover {
+  color: var(--text-error);
+}
+
+.n2o-base-views-rename-input {
+  flex: 1;
+  font-size: 13px;
+  padding: 2px 6px;
+  border: 1px solid var(--interactive-accent);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  outline: none;
+  min-width: 0;
+}
+
+.n2o-base-views-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-top: 4px;
+  background: color-mix(in srgb, var(--text-warning, var(--color-yellow)) 10%, transparent);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.n2o-base-views-confirm-text {
+  flex: 1;
+  color: var(--text-warning, var(--color-yellow));
+}
+
+.n2o-base-views-confirm button {
+  font-size: 12px;
+  padding: 3px 10px;
+}
+
+.n2o-base-views-button-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.n2o-base-views-add-btn {
+  flex: 1;
+  padding: 4px 12px;
+  font-size: 12px;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.n2o-base-views-add-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.n2o-base-views-add-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.n2o-base-views-add-select {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+.n2o-base-views-add-input {
+  flex: 1;
+  font-size: 13px;
+  padding: 4px 8px;
+  min-width: 0;
+}
+
+.n2o-base-views-add-form button {
+  font-size: 12px;
+  padding: 4px 12px;
+}
+
+/* ── Tier Comparison Table ─────────────────────── *//* ── Create New Pages — parent page status ──── */
+.n2o-parent-page-status {
+  font-size: var(--font-smallest);
+  padding: 4px 0;
+  color: var(--text-muted);
+}
+.n2o-parent-page-status.is-resolved {
+  color: var(--text-normal);
+  font-weight: var(--font-semibold);
+}
+.n2o-parent-page-status.is-error {
+  color: var(--text-error);
+}
+.n2o-parent-page-status.is-loading {
+  font-style: italic;
+}
+
+
+
+/* Newsletter opt-in checkbox in the connect flow. */
+.n2o-dash-notconn-optin {
+  margin-top: 10px;
+}
+.n2o-dash-notconn-optin-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  cursor: pointer;
+}

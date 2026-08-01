@@ -1,0 +1,351 @@
+/* ── Conflict Modal ────────────────────────────────── */
+
+.n2o-conflict-modal {
+  min-width: 600px;
+  max-width: 900px;
+}
+
+.n2o-conflict-section {
+  margin: 12px 0;
+}
+
+.n2o-conflict-content {
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.n2o-conflict-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 8px 0;
+}
+
+.n2o-conflict-diff {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.n2o-conflict-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-conflict-panel h4 {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+}
+
+.n2o-conflict-actions {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 8px 0;
+}
+
+.n2o-conflict-actions button {
+  flex: 1;
+}
+
+.n2o-conflict-batch {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.n2o-conflict-batch button {
+  font-size: 12px;
+}
+
+.n2o-conflict-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* ── Diff Highlighting ─── */
+
+.n2o-diff-del {
+  background: color-mix(in srgb, var(--text-error) 20%, transparent);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-error);
+}
+
+.n2o-diff-ins {
+  background: color-mix(in srgb, var(--text-success) 20%, transparent);
+}
+
+.n2o-diff-equal {
+  /* no special styling */
+}
+
+/* ── Merge Editor ─── */
+
+.n2o-conflict-merge-section {
+  margin: 12px 0;
+}
+
+.n2o-conflict-merge-editor {
+  width: 100%;
+  min-height: 150px;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  padding: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  resize: vertical;
+  margin-bottom: 8px;
+}
+
+.n2o-conflict-apply-merge {
+  margin-top: 4px;
+}
+
+/* ── Apply to All ─── */
+
+.n2o-conflict-apply-all-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+/* ── Local Changes Modal ─────────────────────────────── */
+
+.n2o-local-changes-modal {
+  min-width: 500px;
+  max-width: 700px;
+}
+
+.n2o-local-changes-desc {
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.n2o-local-changes-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 12px 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+}
+
+.n2o-local-changes-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  gap: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.n2o-local-changes-row:last-child {
+  border-bottom: none;
+}
+
+.n2o-local-changes-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.n2o-local-changes-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.n2o-local-changes-path {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.n2o-local-changes-select {
+  flex-shrink: 0;
+  min-width: 160px;
+}
+
+.n2o-local-changes-batch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 8px 0;
+  flex-wrap: wrap;
+}
+
+.n2o-local-changes-batch-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.n2o-local-changes-batch button {
+  font-size: 12px;
+}
+
+.n2o-local-changes-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.n2o-local-changes-note {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.n2o-local-changes-note p {
+  margin: 0;
+}
+
+/* ── Change Log Panel ──────────────────────────────── */
+
+.n2o-change-log {
+  padding: 8px;
+}
+
+.n2o-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.n2o-log-header h4 {
+  margin: 0;
+}
+
+.n2o-log-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.n2o-log-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.n2o-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.n2o-log-entry {
+  border-radius: 4px;
+}
+
+.n2o-log-entry summary {
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.n2o-log-entry summary:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-log-success {
+  color: var(--text-normal);
+}
+
+.n2o-log-error {
+  color: var(--text-error);
+}
+
+.n2o-log-icon {
+  font-weight: 700;
+}
+
+.n2o-log-time {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.n2o-log-duration {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.n2o-log-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.n2o-log-body {
+  padding: 4px 8px 8px 24px;
+  font-size: 12px;
+}
+
+.n2o-log-stats {
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.n2o-log-items {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+}
+
+.n2o-log-items li {
+  padding: 1px 0;
+}
+
+.n2o-log-item-created { color: var(--text-success); }
+.n2o-log-item-updated { color: var(--text-accent); }
+.n2o-log-item-failed { color: var(--text-error); }
+.n2o-log-item-orphaned { color: var(--text-warning); }
+
+.n2o-log-item-error {
+  color: var(--text-error);
+  font-size: 11px;
+}
+
+.n2o-log-more {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.n2o-log-errors {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: var(--background-modifier-error);
+  border-radius: 4px;
+}
+
+.n2o-log-errors ul {
+  margin: 4px 0;
+  padding-left: 16px;
+  font-size: 11px;
+  color: var(--text-error);
+}
+
