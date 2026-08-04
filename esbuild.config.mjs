@@ -1,52 +1,23 @@
 import esbuild from "esbuild";
 import process from "process";
 import { builtinModules as builtins } from "node:module";
-import { copyFileSync, writeFileSync, readFileSync, readdirSync, statSync } from "fs";
-import { createHash } from "crypto";
+import { copyFileSync, writeFileSync, readFileSync, readdirSync } from "fs";
 import { execSync } from "child_process";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { computeRendererVersion } from "./scripts/renderer-fingerprint.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
- * Renderer fingerprint (#1628): a hash of every source file that can shape
- * pull output, injected as __N2O_RENDERER_VERSION__. Sync records store the
- * fingerprint that produced each note; a mismatch on the next sync re-renders
- * the note, so renderer fixes reach already-synced vaults instead of waiting
- * for the Notion page to change.
- *
- * DELIBERATELY over-broad (whole directories, not a curated file list): a
- * curated list is an exclusion list that the next renderer file silently
- * escapes (avoiding-drift #2). A false positive only costs one re-render
- * sweep after an update; a false negative re-creates #1628.
+ * Renderer fingerprint (#1628) - see scripts/renderer-fingerprint.mjs for what it
+ * hashes and why it is deliberately over-broad. It lives in its own module so the
+ * path-independence property can be tested directly (#2034).
  *
  * Computed once per build process - in watch mode, restart to refresh it
  * (records are only stamped by real deployed builds anyway).
  */
-function computeRendererVersion() {
-  const dirs = ["src/domain", "src/infrastructure/notion", "src/infrastructure/obsidian"];
-  const files = [];
-  const walk = (dir) => {
-    for (const name of readdirSync(dir)) {
-      const p = join(dir, name);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (p.endsWith(".ts")) files.push(p);
-    }
-  };
-  for (const d of dirs) walk(resolve(__dirname, d));
-  files.sort();
-  const h = createHash("sha256");
-  for (const f of files) {
-    h.update(f.replace(/\\/g, "/"));
-    // Normalize line endings: git's CRLF/LF conversion must not change the
-    // fingerprint, or every checkout flavor would trigger a spurious vault-wide
-    // re-render sweep. Hash the text, not the bytes.
-    h.update(readFileSync(f, "utf8").replace(/\r\n/g, "\n"));
-  }
-  return h.digest("hex").slice(0, 12);
-}
-const rendererVersion = computeRendererVersion();
+const rendererVersion = computeRendererVersion(__dirname);
 console.log(`Renderer fingerprint: ${rendererVersion}`);
 
 /**
