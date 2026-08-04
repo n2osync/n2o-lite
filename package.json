@@ -1,6 +1,6 @@
 {
   "name": "n2o-lite",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "N2O Sync Lite - Import Notion pages and databases into Obsidian",
   "main": "main.js",
   "scripts": {

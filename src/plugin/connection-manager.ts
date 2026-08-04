@@ -16,6 +16,7 @@ import type { CachedPage } from '../infrastructure/storage/page-cache-store';
 import { normalizeNotionId } from '../domain/models/notion-id';
 import { createLogger } from '../shared/logger';
 import { LICENSE_SERVER_URL } from '../shared/constants';
+import { NotionApiError } from '../shared/errors';
 
 /** Shape of the OAuth token retrieval response from the license server. */
 export interface OAuthTokenResponse {
@@ -113,7 +114,16 @@ export async function testConnection(
           detail: "Token lacks permissions. Re-check your integration's capabilities.",
         };
       }
-      return { success: false, detail: `Notion API error (${status})` };
+      /* Never a bare status code (#1980). Notion sends a real message on these;
+       * show it, and keep the number for anyone reporting the problem. */
+      const fromNotion = error instanceof NotionApiError ? error.message : null;
+      return {
+        success: false,
+        detail: fromNotion
+          ? `Notion refused the request (HTTP ${status}): ${fromNotion}`
+          : `Notion refused the request (HTTP ${status}). Check that the token is valid and ` +
+            `that your pages are shared with the integration.`,
+      };
     }
     return {
       success: false,
@@ -142,7 +152,7 @@ export function startOAuthFlow(): void {
  * or null when the input is too far gone to send to the server.
  *
  * Server emits a 64-char lowercase hex string (32 random bytes × 2 hex
- * digits) - see server/n2o-lic/api/oauth/callback.ts. The obsidian://
+ * digits) - see the server's /api/oauth/callback route. The obsidian://
  * hand-off has been observed to mutate the URL on some Win 11 + Edge
  * configurations (issue #1: trailing whitespace, partial percent-
  * encoding). Trim incidental whitespace and accept any hex shape
@@ -154,6 +164,58 @@ export function startOAuthFlow(): void {
 export function normaliseOAuthSession(input: string | null | undefined): string | null {
   const trimmed = (input ?? '').trim();
   return /^[a-f0-9]{32,128}$/i.test(trimmed) ? trimmed : null;
+}
+
+/** The server's own `error` string, when it sent one worth showing. */
+function readServerError(body: unknown): string | null {
+  if (!body || typeof body !== 'object') return null;
+  const message = (body as Record<string, unknown>).error;
+  return typeof message === 'string' && message.trim().length > 0 ? message.trim() : null;
+}
+
+/**
+ * Turn a non-2xx from the licence server into something the user can act on
+ * (#1980).
+ *
+ * The server writes good errors and we show them: a stale session comes back as
+ * "Session expired or already retrieved. Please reconnect from Obsidian.", which
+ * is better copy than anything invented here. When there is no usable body, the
+ * status picks a written sentence instead. Never a bare code and never "check the
+ * console": a sign-in that failed on our infrastructure must not read to the user
+ * like a decision about their account.
+ *
+ * Every branch names the token route, because it is the one path that works while
+ * our server does not.
+ */
+function describeServerFailure(status: number, body: unknown): string {
+  const fromServer = readServerError(body);
+  if (fromServer) return fromServer;
+
+  if (status === 402 || status === 503) {
+    return (
+      `Our sign-in service is not accepting requests right now (HTTP ${status} from the ` +
+      `N2O server). This is a problem on our side, not with your Notion account. You can ` +
+      `connect with an internal integration token instead, or sign in again later.`
+    );
+  }
+  if (status === 404) {
+    return (
+      `The sign-in session was not found on the N2O server (HTTP 404). These sessions are ` +
+      `one-time and short-lived, so this usually means it was already used or it ran out. ` +
+      `Start the sign-in again, or connect with an internal integration token.`
+    );
+  }
+  if (status >= 500) {
+    return (
+      `The N2O server could not finish the sign-in (HTTP ${status}). Nothing is wrong with ` +
+      `your Notion account. Try again in a few minutes, or connect with an internal ` +
+      `integration token.`
+    );
+  }
+  return (
+    `The N2O server refused the sign-in (HTTP ${status}). Start the sign-in again from ` +
+    `Settings, or connect with an internal integration token.`
+  );
 }
 
 export async function handleOAuthCallback(
@@ -176,16 +238,24 @@ export async function handleOAuthCallback(
     return { success: false, detail: 'Invalid session ID format.' };
   }
 
+  /* Retrieve tokens from the licence server (one-time, deleted after retrieval).
+   * client/version identify Lite connects server-side (free-tier user creation
+   * instead of a trial); emailOptIn carries the connect-flow checkbox - the
+   * server subscribes the email only when true. The current server ignores
+   * unknown fields, so this is forward-compatible.
+   *
+   * throw:false is load-bearing (#1980). Obsidian's requestUrl throws on any
+   * status 400+ by default, which sent every 402, 404 and 500 straight to the
+   * outer catch before the body was read, and the server's own error text was
+   * discarded. Reading the status ourselves is what lets describeServerFailure
+   * show what actually happened. */
+  let response;
   try {
-    // Retrieve tokens from Vercel (one-time, deleted after retrieval)
-    // client/version identify Lite connects server-side (free-tier user
-    // creation instead of a trial); emailOptIn carries the connect-flow
-    // checkbox - the server subscribes the email only when true. The
-    // current server ignores unknown fields, so this is forward-compatible.
-    const response = await requestUrl({
+    response = await requestUrl({
       url: `${SERVER_BASE}/api/oauth/token`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      throw: false,
       body: JSON.stringify({
         session: cleanSession,
         client: 'n2o-lite', // server license OAuth client id (wire value), not the plugin id
@@ -193,13 +263,47 @@ export async function handleOAuthCallback(
         emailOptIn: plugin.settings.newsletterOptIn === true,
       }),
     });
+  } catch (error) {
+    /* Nothing came back at all: DNS, offline, TLS, timeout. Distinct from a
+     * server that answered with a status, and it needs different advice. */
+    log.error('OAuth token request could not reach the server', error);
+    return {
+      success: false,
+      detail:
+        'Could not reach the N2O server to finish signing in. Check your internet ' +
+        'connection and try again, or connect with an internal integration token.',
+    };
+  }
 
-    const data = parseOAuthTokenResponse(response.json);
+  if (response.status >= 400) {
+    log.error(`OAuth token request failed with status ${response.status}`, response.json);
+    return { success: false, detail: describeServerFailure(response.status, response.json) };
+  }
 
-    if (!data.success || !data.accessToken) {
-      return { success: false, detail: data.error ?? 'Failed to retrieve tokens from server.' };
-    }
+  let data;
+  try {
+    data = parseOAuthTokenResponse(response.json);
+  } catch (error) {
+    log.error('OAuth token response was malformed', error);
+    return {
+      success: false,
+      detail:
+        'The N2O server sent a sign-in response N2O could not read. Try signing in ' +
+        'again, or connect with an internal integration token.',
+    };
+  }
 
+  if (!data.success || !data.accessToken) {
+    return {
+      success: false,
+      detail:
+        data.error ??
+        'The N2O server did not return a Notion token. Try signing in again, or connect ' +
+          'with an internal integration token.',
+    };
+  }
+
+  try {
     // Three-tier profile matching:
     // 1. Exact OAuth re-auth (same workspace, same auth type)
     // 2. Single-profile upgrade (first-install case - upgrade in-place, keep all settings)
@@ -276,8 +380,16 @@ export async function handleOAuthCallback(
       detail: `OAuth tokens received but connection test failed: ${connectionResult.detail}`,
     };
   } catch (error) {
-    log.error('OAuth callback failed', error);
-    return { success: false, detail: 'OAuth connection failed. Check the console for details.' };
+    /* The token arrived and the server is fine - this is a local failure while
+     * saving the profile or running first discovery. Say so, and say the token
+     * is not lost, so the user retries instead of assuming sign-in is broken. */
+    log.error('OAuth succeeded but storing the connection failed', error);
+    return {
+      success: false,
+      detail: `Signed in to Notion, but N2O could not finish setting up the connection: ${
+        error instanceof Error ? error.message : String(error)
+      }. Try running the sync again from Settings.`,
+    };
   }
 }
 

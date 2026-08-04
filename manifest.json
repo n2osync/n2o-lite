@@ -1,7 +1,7 @@
 {
 	"id": "notion-pull-lite",
 	"name": "N2O Sync Lite",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"minAppVersion": "1.7.2",
 	"description": "Import up to 100 Notion pages and your databases as clean Markdown, with properties as frontmatter and media downloaded alongside.",
 	"author": "simhaxdev",

@@ -165,8 +165,13 @@ Two routes. Both end in the same place, so pick whichever you prefer.
 
 **Sign in (easiest).** Settings > N2O Sync Lite > Connection > **Connect with
 Notion**. Sign in, pick the pages you want to share, done. This creates a free
-account on the N2O licence server, which holds your email and workspace name and
-nothing else. If you would rather not, use the token route below.
+account on the N2O server. The account holds your email and your Notion workspace
+name. Because the plugin calls the server to complete the sign-in, the server also
+records what any web server sees on a request: your IP address, the rough location
+it implies (country and city), and which plugin version you are running. Your
+Notion content is never part of it. Details in the
+[privacy policy](https://n2osync.com/privacy). If you would rather not, use the
+token route below.
 
 **Paste a token (no account needed).** Nothing leaves your machine except Notion
 traffic. Create an internal integration at [notion.so/my-integrations](https://www.notion.so/my-integrations),
@@ -234,11 +239,13 @@ N2O Sync Lite talks to three hosts at most, and usually only one:
 
 - **`api.notion.com`** for all sync traffic. Media files download from the URLs
   the Notion API returns, which are Notion-hosted (typically AWS S3).
-- **`n2o-lic.vercel.app`** only for the "Connect with Notion" sign-in handshake,
-  and only if you use it. That server is never used for sync, so your Notion
-  content never passes through it. If you opt in to the newsletter during sign-in
-  (off by default), the opt-in is the only thing sent; leaving it unticked sends
-  nothing.
+- **`api.n2osync.com`** only for the "Connect with Notion" sign-in handshake, and
+  only if you use it. That server is never used for sync, so your Notion content
+  never passes through it. The plugin sends the one-time sign-in session id, the
+  edition (`n2o-lite`), the plugin version, and whether you ticked the newsletter
+  box (off by default). The server records what it observes on the call: your IP
+  address, the approximate location it implies, and that version. See the
+  [privacy policy](https://n2osync.com/privacy).
 - **`api.github.com`** only when you click Install in the upgrade panel, to fetch
   the paid edition's release from `github.com/n2osync/n2o`. Never during sync, and
   never on its own.
@@ -246,9 +253,11 @@ N2O Sync Lite talks to three hosts at most, and usually only one:
 If you connect with a pasted integration token and do not install the paid edition,
 the plugin talks to `api.notion.com` alone.
 
-There is no client-side telemetry, no analytics and no update pings. Your token
-is stored in the vault's plugin settings and is only ever sent to
-`api.notion.com`.
+The plugin collects nothing on your machine. There is no telemetry, no analytics
+and no update ping, and it never calls our server on a timer or in the background.
+The only thing our server ever learns is what it sees on the sign-in call above,
+and it learns nothing at all if you use a pasted token. Your Notion token is
+stored in the vault's plugin settings and is only ever sent to `api.notion.com`.
 
 Full policy: [n2osync.com/docs/legal/privacy](https://n2osync.com/docs/legal/privacy/)
 
