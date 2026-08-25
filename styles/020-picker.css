@@ -1,0 +1,1754 @@
+/* ── Status Bar ──────────────────────────────────── */
+
+.n2o-status-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.n2o-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.n2o-status-dot.n2o-status-idle {
+  background: var(--color-green);
+}
+
+.n2o-status-dot.n2o-status-syncing {
+  background: var(--color-blue);
+  animation: n2o-pulse 1.2s infinite;
+}
+
+.n2o-status-dot.n2o-status-error {
+  background: var(--color-red);
+}
+
+.n2o-status-dot.n2o-status-paused {
+  background: var(--color-yellow);
+}
+
+.n2o-conflict-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--color-orange);
+  color: var(--text-on-accent);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+@keyframes n2o-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Tree Picker Modal ─────────────────────────────── */
+
+.n2o-tree-picker-modal {
+  width: 960px;
+  height: 680px;
+  max-width: 95vw;
+  max-height: 90vh;
+  padding: 0;
+}
+
+/* Reset Obsidian modal chrome — no internal padding, no empty header strip,
+   so our header sits flush with the modal edge on top + sides */
+.n2o-tree-picker-modal .modal {
+  padding: 0;
+}
+
+.n2o-tree-picker-modal .modal-header {
+  display: none;
+}
+
+.n2o-tree-picker-modal .modal-content.n2o-tree-picker {
+  padding: 0;
+  margin: 0;
+}
+
+.n2o-tree-picker {
+  height: 100%;
+  min-width: 520px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Header row: title + actions ── */
+
+.n2o-tree-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.n2o-tree-header h2 {
+  margin: 0;
+  flex: 1;
+}
+
+.n2o-tree-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-header-actions button {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.n2o-tree-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px !important;
+  min-width: 28px;
+}
+
+.n2o-tree-icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.n2o-tree-icon-btn.n2o-refreshing {
+  pointer-events: none;
+}
+
+.n2o-tree-icon-btn.n2o-refreshing svg {
+  animation: n2o-spin 0.8s linear infinite;
+}
+
+@keyframes n2o-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Search ── */
+
+.n2o-tree-search {
+  width: 100%;
+  padding: 5px 10px;
+  font-size: 12px;
+  border: none;
+  border-bottom: 1px solid var(--background-modifier-border);
+  border-radius: 0;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  margin: 0;
+  outline: none;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.n2o-tree-search:focus {
+  border-bottom-color: var(--interactive-accent);
+}
+
+.n2o-tree-search::placeholder {
+  color: var(--text-faint);
+}
+
+/* ── Selected panel ── */
+
+.n2o-tree-selected {
+  margin-bottom: 8px;
+}
+
+.n2o-tree-selected-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.n2o-tree-selected-chevron {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.n2o-tree-selected-chevron svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.15s ease;
+}
+
+.n2o-tree-selected-header.is-expanded .n2o-tree-selected-chevron svg {
+  transform: rotate(90deg);
+}
+
+.n2o-tree-selected-header:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.n2o-tree-selected-list {
+  max-height: 96px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 4px;
+  margin-top: 4px;
+}
+
+.n2o-tree-selected-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.n2o-tree-selected-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-tree-selected-icon {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-selected-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.n2o-tree-selected-remove {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0 4px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.n2o-tree-selected-remove:hover {
+  color: var(--text-error);
+  background: color-mix(in srgb, var(--text-error) 10%, transparent);
+}
+
+.n2o-tree-selected-footer {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 8px 2px;
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 2px;
+}
+
+/* ── Status ── */
+
+/* ── Progress rail ── */
+
+.n2o-tree-progress-rail {
+  height: 3px;
+  background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+  border-radius: 0;
+  overflow: hidden;
+  opacity: 1;
+  margin: 0;
+  position: relative;
+}
+
+.n2o-tree-progress-rail-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 0;
+  transition: width 0.4s ease;
+  background: var(--interactive-accent);
+  position: relative;
+  z-index: 1;
+}
+
+/* Indeterminate sweep — always runs while .is-active so the bar is alive
+   from the first frame, even before any real progress is reported. */
+.n2o-tree-progress-rail.is-active:not(.is-idle)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 35%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--interactive-accent) 50%,
+    transparent 100%
+  );
+  opacity: 0.7;
+  animation: n2o-rail-sweep 1.4s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes n2o-rail-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(385%); }
+}
+
+/* Idle (post-discovery): solid full bar, no animation */
+.n2o-tree-progress-rail.is-idle .n2o-tree-progress-rail-bar {
+  background: var(--interactive-accent);
+  opacity: 0.5;
+}
+
+@keyframes n2o-rail-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.n2o-tree-progress-rail.is-complete .n2o-tree-progress-rail-bar {
+  animation: n2o-rail-done 0.6s ease;
+}
+
+@keyframes n2o-rail-done {
+  0% { opacity: 1; }
+  30% { opacity: 1; filter: brightness(1.8); }
+  60% { opacity: 1; filter: brightness(1); }
+  100% { opacity: 0.6; }
+}
+
+/* ── Status ── */
+
+.n2o-tree-status {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  min-height: 18px;
+}
+
+/* ── Tree container ── */
+
+.n2o-tree-container {
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 4px 6px;
+  margin-bottom: 16px;
+}
+
+.n2o-tree-container h3 {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 10px 0 4px 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.n2o-tree-container h3:first-child {
+  margin-top: 0;
+}
+
+/* ── Tree nodes ── */
+
+.n2o-tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: default;
+  border-radius: 6px;
+  transition: background 0.1s ease;
+}
+
+.n2o-tree-node:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-tree-node:focus,
+.n2o-tree-node:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--interactive-accent);
+}
+
+/* Selected database row gets a subtle accent wash, matching the design */
+.n2o-tree-picker .n2o-tree-node.is-checked {
+  background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+}
+
+.n2o-tree-picker .n2o-tree-node.is-checked .n2o-tree-title {
+  font-weight: 500;
+}
+
+.n2o-tree-picker .n2o-tree-node.is-child {
+  opacity: 0.92;
+}
+
+/* Item-count pill */
+.n2o-tree-picker .n2o-tree-item-count {
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 10.5px;
+  color: var(--text-muted);
+  background: var(--background-modifier-border);
+  padding: 2px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Filter match highlight inside titles. No horizontal padding: the match is
+   usually MID-WORD and any inset visually splits the word (private issue #21). */
+.n2o-tree-picker .n2o-tree-title-match {
+  background: color-mix(in srgb, var(--interactive-accent) 22%, transparent);
+  color: var(--interactive-accent);
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+/* Database icon tinted with accent to match design */
+.n2o-tree-picker .n2o-tree-icon.is-database {
+  color: var(--interactive-accent);
+}
+
+.n2o-tree-picker .n2o-tree-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.n2o-tree-picker .n2o-tree-icon .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.n2o-tree-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+
+.n2o-tree-toggle svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.15s ease;
+}
+
+.n2o-tree-toggle.is-expanded svg {
+  transform: rotate(90deg);
+}
+
+.n2o-tree-toggle:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.n2o-tree-toggle-spacer {
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-node input[type="checkbox"] {
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-icon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-title {
+  font-size: 13px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-tree-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.n2o-tree-badge {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  background: var(--background-modifier-hover);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+/* ── View type segmented control ── */
+
+.n2o-tree-view-group {
+  display: flex;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.n2o-tree-view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.n2o-tree-view-btn + .n2o-tree-view-btn {
+  border-left: 1px solid var(--background-modifier-border);
+}
+
+.n2o-tree-view-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-tree-view-btn:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.n2o-tree-view-btn.is-active {
+  color: var(--text-on-accent);
+  background: var(--interactive-accent);
+}
+
+.n2o-tree-node-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Token setup UI (Enhanced Metadata section) ─────────────────── */
+
+.n2o-token-row {
+  margin: 10px 0;
+}
+
+.n2o-token-status {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.n2o-token-status--active {
+  color: var(--color-green);
+}
+
+.n2o-token-status--empty {
+  color: var(--text-muted);
+}
+
+.n2o-token-btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.n2o-token-signin-btn,
+.n2o-token-grab-btn,
+.n2o-token-clear-btn {
+  font-size: 13px;
+}
+
+.n2o-token-clear-btn {
+  color: var(--text-muted);
+}
+
+.n2o-token-manual {
+  margin-top: 10px;
+}
+
+.n2o-token-manual summary {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 4px;
+  user-select: none;
+}
+
+.n2o-token-manual summary:hover {
+  color: var(--text-normal);
+}
+
+.n2o-token-manual .setting-item {
+  border-top: none;
+  padding-top: 4px;
+}
+
+/* ── Tree filter (in-place visibility, no DOM rebuild) ── */
+
+.n2o-tree-node.is-filtered-out {
+  display: none;
+}
+
+.n2o-tree-section.is-filtered-empty {
+  display: none;
+}
+
+.n2o-tree-filter-empty {
+  margin: 8px 4px;
+}
+
+/* ── Tree Section (collapsible database/page groups) ── */
+
+.n2o-tree-section {
+  margin-bottom: 4px;
+}
+
+.n2o-tree-section-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-faint);
+  padding: 6px 4px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.n2o-tree-section-header::-webkit-details-marker { display: none; }
+
+.n2o-tree-section-header::before {
+  content: '\25B6';
+  font-size: 8px;
+  transition: transform 0.15s;
+}
+
+.n2o-tree-section[open] > .n2o-tree-section-header::before {
+  transform: rotate(90deg);
+}
+
+.n2o-tree-section-header:hover {
+  color: var(--text-muted);
+}
+
+.n2o-tree-load-more {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: none;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  text-align: left;
+}
+
+.n2o-tree-load-more:hover:not(:disabled) {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.n2o-tree-load-more:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Notion search section pinned to bottom of main pane — sits below tree scroll area */
+.n2o-tree-notion-search {
+  flex-shrink: 0;
+  margin: 8px 0 0;
+}
+
+/* Soft prompt card matching the soft-button language used elsewhere */
+.n2o-tree-picker .n2o-tree-notion-search-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--background-modifier-border) 70%, transparent);
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-card::-webkit-details-marker { display: none; }
+.n2o-tree-picker .n2o-tree-notion-search-card::marker { display: none; }
+
+.n2o-tree-picker .n2o-tree-notion-search-card:hover {
+  border-color: var(--background-modifier-border);
+  background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-icon .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-title {
+  font-size: 12.5px;
+  color: var(--text-normal);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-sub {
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-chev {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  transition: transform 0.12s;
+}
+
+.n2o-tree-picker .n2o-tree-notion-search-chev .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* Open state: rotate the chevron to point down */
+.n2o-tree-picker .n2o-tree-notion-search-details[open] .n2o-tree-notion-search-chev {
+  transform: rotate(90deg);
+}
+.n2o-tree-picker .n2o-tree-notion-search-details[open] .n2o-tree-notion-search-card {
+  border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--interactive-accent) 4%, transparent);
+}
+
+/* Expanded content area below the card */
+.n2o-tree-picker .n2o-tree-notion-search-expand {
+  padding: 10px 4px 4px;
+}
+
+.n2o-tree-notion-search-input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  margin-bottom: 8px;
+}
+
+.n2o-tree-notion-search-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+}
+
+.n2o-tree-notion-search-results {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.n2o-tree-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  margin: 0;
+  border-top: 1px solid color-mix(in srgb, var(--background-modifier-border) 60%, transparent);
+}
+
+.n2o-tree-footer-hints {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.n2o-tree-footer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.n2o-tree-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 3px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.n2o-tree-footer-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-footer-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.n2o-tree-footer-info-icon {
+  display: inline-flex;
+  color: var(--text-faint);
+}
+
+.n2o-tree-footer-info-icon .svg-icon {
+  width: 11px;
+  height: 11px;
+}
+
+.n2o-tree-picker .n2o-tree-footer-cancel,
+.n2o-tree-picker .n2o-tree-footer-save {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.n2o-tree-picker .n2o-tree-footer-cancel {
+  border: 1px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.n2o-tree-picker .n2o-tree-footer-cancel:hover {
+  background: color-mix(in srgb, var(--text-normal) 5%, transparent);
+  color: var(--text-normal);
+}
+
+.n2o-tree-picker .n2o-tree-footer-save {
+  border: 1px solid var(--interactive-accent);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.n2o-tree-picker .n2o-tree-footer-save:hover {
+  background: var(--interactive-accent-hover, var(--interactive-accent));
+  filter: brightness(1.05);
+}
+
+/* Hide keyboard hints on narrow modals (e.g. mobile) */
+@media (max-width: 600px) {
+  .n2o-tree-footer-hints,
+  .n2o-tree-footer-info {
+    display: none;
+  }
+}
+
+/* ── Tree picker — themed two-pane redesign ──────── */
+
+.n2o-tree-picker {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+/* Title bar: N2O wordmark + "/ Select pages to sync" + OAuth indicator */
+.n2o-tree-picker .n2o-tree-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--background-modifier-border) 60%, transparent);
+}
+
+.n2o-tree-picker .n2o-tree-header h2 { display: none; }
+
+/* Hide Obsidian's default modal close button — we render our own inline in the header */
+.n2o-tree-picker-modal .modal-close-button { display: none; }
+
+.n2o-tree-picker .n2o-tree-header-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 4px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.n2o-tree-picker .n2o-tree-header-close:hover {
+  background: color-mix(in srgb, var(--text-normal) 8%, transparent);
+  color: var(--text-normal);
+}
+
+.n2o-tree-picker .n2o-tree-header-close .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Header breadcrumb only (wordmark / sep / crumb). Must stay scoped to the
+   header: tree ROW titles share this class and get split into prefix/match/
+   suffix spans by the filter highlighter - an unscoped flex gap here inserted
+   8px inside matched words (private issue #21). */
+.n2o-tree-header .n2o-tree-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-tree-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.4px;
+  color: var(--text-normal);
+}
+
+.n2o-tree-wordmark-accent {
+  font-size: 10px;
+  color: var(--interactive-accent);
+  margin: 0 1px;
+}
+
+.n2o-tree-title-sep {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.n2o-tree-title-crumb {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.n2o-tree-oauth {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 3px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-oauth-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-green, #16a34a);
+}
+
+/* Always-visible discovery banner — flush accent-tinted strip directly below the header.
+   All states share the same accent bar styling; only icon/text color shifts per state. */
+.n2o-tree-discovery-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  margin: 0;
+  background: color-mix(in srgb, var(--interactive-accent) 6%, transparent);
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+  border-radius: 0;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--text-muted);
+  min-height: 30px;
+}
+
+.n2o-tree-discovery-banner.is-error {
+  background: color-mix(in srgb, var(--color-red, #dc2626) 8%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--color-red, #dc2626) 25%, transparent);
+  color: var(--color-red, #dc2626);
+}
+
+.n2o-tree-discovery-icon {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.n2o-tree-discovery-icon .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-tree-discovery-banner .n2o-tree-discovery-icon {
+  color: var(--interactive-accent);
+}
+
+.n2o-tree-discovery-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--interactive-accent);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: n2o-spn 1s linear infinite;
+  flex-shrink: 0;
+}
+
+.n2o-tree-discovery-text {
+  color: var(--interactive-accent);
+  font-weight: 500;
+}
+
+.n2o-tree-discovery-sep {
+  color: var(--text-faint);
+}
+
+.n2o-tree-discovery-sep:empty { display: none; }
+
+.n2o-tree-discovery-count {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.n2o-tree-discovery-count:empty { display: none; }
+
+.n2o-tree-discovery-target {
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+  font-variant-numeric: tabular-nums;
+}
+
+.n2o-tree-discovery-target:empty { display: none; }
+
+.n2o-tree-discovery-spacer { flex: 1; }
+
+.n2o-tree-discovery-cancel {
+  color: var(--interactive-accent);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+.n2o-tree-discovery-cancel:hover { text-decoration: underline; }
+
+.n2o-tree-empty-hint {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Breadcrumbs */
+.n2o-tree-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.n2o-tree-crumb-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-tree-crumb-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.n2o-tree-crumb-icon {
+  display: inline-flex;
+  color: var(--text-faint);
+}
+
+.n2o-tree-crumb-icon .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-tree-crumb-ws {
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.n2o-tree-crumb-sep { display: inline-flex; color: var(--text-faint); }
+.n2o-tree-crumb-sep .svg-icon { width: 10px; height: 10px; }
+
+.n2o-tree-crumb-path,
+.n2o-tree-crumb-cachetime {
+  color: var(--text-faint);
+}
+
+/* Action bar: filter + match count + All/None/Scan/Refresh soft buttons */
+.n2o-tree-actionbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+
+.n2o-tree-filter-wrap {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  min-width: 0;
+}
+
+.n2o-tree-filter-wrap:focus-within {
+  border-color: var(--interactive-accent);
+}
+
+.n2o-tree-filter-icon { display: inline-flex; color: var(--text-faint); }
+
+.n2o-tree-filter-icon .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.n2o-tree-picker .n2o-tree-search {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12.5px;
+  color: var(--text-normal);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.n2o-tree-filter-matches {
+  display: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+  color: var(--interactive-accent);
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.n2o-tree-filter-matches.is-visible {
+  display: inline-block;
+}
+
+.n2o-tree-action-btns {
+  display: inline-flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.n2o-tree-soft-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .1s;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.n2o-tree-soft-btn:hover {
+  background: color-mix(in srgb, var(--text-normal) 5%, transparent);
+  color: var(--text-normal);
+}
+
+.n2o-tree-soft-btn-icon { display: inline-flex; }
+.n2o-tree-soft-btn-icon .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-tree-soft-btn.n2o-refreshing .n2o-tree-soft-btn-icon {
+  animation: n2o-spn 1s linear infinite;
+}
+
+@keyframes n2o-spn { to { transform: rotate(360deg); } }
+
+/* Body: three-pane flex row — rail / tree / selection */
+.n2o-tree-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Tree container: scrolls internally, no border (resets the base .n2o-tree-container rule) */
+.n2o-tree-picker .n2o-tree-container {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: none;
+  border-radius: 0;
+  padding: 4px 0 0;
+  margin: 0;
+}
+
+/* Workspace rail — 56px left strip, full height of body, settings gear pinned bottom */
+.n2o-tree-rail {
+  width: 56px;
+  flex-shrink: 0;
+  background: var(--background-secondary-alt, var(--background-secondary));
+  border-right: 1px solid var(--background-modifier-border);
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0 12px 0 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.n2o-tree-rail-spacer { flex: 1 1 auto; min-height: 8px; }
+
+.n2o-tree-rail-settings {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.n2o-tree-rail-settings:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.n2o-tree-rail-settings .svg-icon { width: 16px; height: 16px; }
+
+/* Main pane — breadcrumbs + actionbar + tree, stacked between rail and selection panel */
+.n2o-tree-mainpane {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.n2o-tree-rail-ws {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(270 55% 52%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+}
+
+.n2o-tree-rail-ws.is-active {
+  box-shadow: 0 0 0 2px var(--background-secondary-alt, var(--background-secondary)),
+              0 0 0 4px var(--interactive-accent);
+}
+
+.n2o-tree-rail-divider {
+  width: 24px;
+  height: 1px;
+  background: var(--background-modifier-border);
+  margin: 2px 0;
+}
+
+.n2o-tree-rail-add {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px dashed var(--background-modifier-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.n2o-tree-rail-add:hover {
+  color: var(--text-normal);
+  border-color: var(--interactive-accent);
+}
+
+.n2o-tree-rail-add .svg-icon { width: 14px; height: 14px; }
+
+/* Duplicate selector kept for legacy classes; same intent as block above */
+.n2o-tree-picker .n2o-tree-container {
+  padding: 4px 0 0;
+}
+
+/* Selection panel — pinned to right side of body, fits inside modal padding */
+.n2o-tree-body .n2o-tree-selected {
+  width: 290px;
+  flex-shrink: 0;
+  background: var(--background-secondary);
+  border-left: 1px solid var(--background-modifier-border);
+  margin: 0 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.n2o-tree-body .n2o-tree-selected:empty {
+  display: none;
+}
+
+.n2o-tree-sel-top {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.n2o-tree-sel-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 10px;
+}
+
+.n2o-tree-sel-gauge-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.n2o-tree-sel-gauge {
+  flex-shrink: 0;
+  display: block;
+}
+
+.n2o-tree-sel-gauge-meta { flex: 1; min-width: 0; }
+
+.n2o-tree-sel-of {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.n2o-tree-sel-breakdown {
+  font-size: 12px;
+  color: var(--text-normal);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.n2o-tree-sel-estimate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--interactive-accent);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.n2o-tree-sel-estimate-icon { display: inline-flex; color: currentColor; }
+.n2o-tree-sel-estimate-icon .svg-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.n2o-tree-sel-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.n2o-tree-picker .n2o-tree-sel-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 4px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 400;
+  cursor: pointer;
+  border-radius: 0;
+  height: auto;
+  line-height: 1;
+}
+
+.n2o-tree-picker .n2o-tree-sel-action:hover:not(:disabled) {
+  color: var(--interactive-accent);
+  background: transparent;
+  box-shadow: none;
+}
+
+.n2o-tree-picker .n2o-tree-sel-action:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: transparent;
+}
+
+.n2o-tree-sel-action-icon { display: inline-flex; }
+.n2o-tree-sel-action-icon .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.n2o-tree-sel-action-spacer { flex: 1; }
+
+/* Grouped selection list — always flex-grow so the INCLUDE WITH SYNC block
+ * below it sticks to the bottom of the panel regardless of selection count. */
+.n2o-tree-sel-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px;
+}
+
+/* When nothing selected, keep the flex growth (empty spacer) so INCLUDE WITH
+ * SYNC stays pinned at the bottom — panel layout is stable. */
+.n2o-tree-sel-list:empty {
+  visibility: hidden;
+}
+
+.n2o-tree-sel-group { margin-bottom: 4px; }
+
+.n2o-tree-sel-group-hdr {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.n2o-tree-sel-group-chev { display: inline-flex; color: var(--text-faint); }
+.n2o-tree-sel-group-chev .svg-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.n2o-tree-sel-group-title { color: var(--text-faint); }
+
+.n2o-tree-sel-group-count {
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-faint);
+}
+
+.n2o-tree-sel-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+
+.n2o-tree-sel-row:hover { background: var(--background-modifier-hover); }
+.n2o-tree-sel-row:hover .n2o-tree-sel-row-x { opacity: 1; }
+
+.n2o-tree-sel-row-icon { display: inline-flex; color: var(--text-muted); flex-shrink: 0; }
+.n2o-tree-sel-row-icon .svg-icon { width: 11px; height: 11px; }
+
+.n2o-tree-sel-row-body { flex: 1; min-width: 0; }
+
+.n2o-tree-sel-row-title {
+  font-weight: 500;
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-tree-sel-row-meta {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.n2o-tree-sel-row-x {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.1s, color 0.1s;
+}
+
+.n2o-tree-sel-row-x:hover {
+  color: var(--text-error, var(--color-red));
+  background: color-mix(in srgb, var(--text-error, var(--color-red)) 15%, transparent);
+}
+
+.n2o-tree-sel-row-x .svg-icon { width: 11px; height: 11px; }
+
+/* Include with sync toggles */
+.n2o-tree-sel-opts {
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+}
+
+.n2o-tree-sel-opts-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.n2o-tree-sel-opt-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.n2o-tree-sel-opt-label {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.n2o-tree-sel-opt-toggle {
+  width: 28px;
+  height: 16px;
+  border-radius: 99px;
+  background: var(--background-modifier-border);
+  position: relative;
+  transition: background 0.15s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.n2o-tree-sel-opt-toggle.is-on {
+  background: var(--interactive-accent);
+}
+
+.n2o-tree-sel-opt-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-on-accent, #fff);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  transition: left 0.15s;
+}
+
+.n2o-tree-sel-opt-toggle.is-on .n2o-tree-sel-opt-thumb {
+  left: 14px;
+}
+
+/* Filter: kbd hint chip inside the input wrap */
+.n2o-tree-filter-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Archive warning */
+.n2o-tree-sel-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--background-modifier-border);
+  background: color-mix(in srgb, var(--color-orange, #ea580c) 10%, transparent);
+  color: var(--color-orange, #ea580c);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.n2o-tree-sel-warn-icon { display: inline-flex; color: currentColor; flex-shrink: 0; margin-top: 1px; }
+.n2o-tree-sel-warn-icon .svg-icon { width: 13px; height: 13px; }
+.n2o-tree-sel-warn-msg { flex: 1; }
+.n2o-tree-sel-warn-msg b { font-weight: 600; }
+
+/* Section headers: label + right-aligned "N selected" chip */
+.n2o-tree-picker .n2o-tree-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 10px 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.n2o-tree-picker .n2o-tree-section-header::marker,
+.n2o-tree-picker .n2o-tree-section-header::-webkit-details-marker {
+  display: none;
+}
+
+.n2o-tree-section-label { flex: 1; display: inline-flex; gap: 8px; align-items: baseline; }
+
+.n2o-tree-section-count {
+  font-family: var(--font-monospace, "JetBrains Mono", monospace);
+  font-size: 10px;
+  color: var(--interactive-accent);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+/* Legacy status line — hidden visually; kept for aria-live screen reader */
+.n2o-tree-status--legacy {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* View-type segmented buttons: only active one gets accent; others muted via opacity */
+.n2o-tree-picker .n2o-tree-view-btn {
+  color: var(--text-muted);
+  opacity: 0.35;
+  background: transparent;
+  transition: opacity 0.12s, color 0.12s, background 0.12s;
+}
+.n2o-tree-picker .n2o-tree-view-btn:hover {
+  opacity: 0.75;
+  color: var(--text-normal);
+}
+.n2o-tree-picker .n2o-tree-view-btn.is-active {
+  opacity: 1;
+  color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+

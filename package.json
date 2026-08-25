@@ -1,0 +1,52 @@
+{
+  "name": "n2o-lite",
+  "version": "1.0.12",
+  "description": "N2O Sync Lite - Import Notion pages and databases into Obsidian",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ --max-warnings 0",
+    "lint:fix": "eslint src/ --fix",
+    "lint:layers": "node scripts/check-layers.mjs",
+    "format": "prettier --write src/**/*.ts",
+    "test:preflight": "npm run typecheck && npm run lint && npm run lint:layers && npx madge --extensions ts --circular src/ && npm run build && node scripts/check-network.mjs"
+  },
+  "keywords": [
+    "obsidian",
+    "notion",
+    "import",
+    "sync",
+    "plugin"
+  ],
+  "author": "N2O",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n2osync/n2o-lite.git"
+  },
+  "devDependencies": {
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.38.6",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^20.11.0",
+    "esbuild": "^0.27.3",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-obsidianmd": "^0.4.1",
+    "fake-indexeddb": "6.0.1",
+    "knip": "^6.29.0",
+    "obsidian": "1.12.2",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.1.0"
+  },
+  "dependencies": {
+    "sql.js": "1.13.0"
+  }
+}

@@ -1,0 +1,931 @@
+/* ── Settings ──────────────────────────────────────── */
+
+.n2o-connection-status {
+  font-size: 13px;
+  padding: 4px 0;
+  min-height: 20px;
+}
+
+.n2o-selected-summary {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+.n2o-advanced-toggle {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 0;
+  color: var(--text-muted);
+}
+
+.n2o-advanced-toggle:hover {
+  color: var(--text-normal);
+}
+
+/* ── Settings Tab Bar ─────────────────────────────── */
+
+.n2o-settings-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 16px;
+}
+
+.n2o-settings-tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.n2o-settings-tab.is-active {
+  color: var(--text-normal);
+  border-bottom-color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+.n2o-settings-tab:hover {
+  color: var(--text-normal);
+}
+
+.n2o-settings-content {
+  min-height: 200px;
+}
+
+.n2o-settings-group {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.n2o-settings-group-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.n2o-settings-group-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.n2o-settings-nested {
+  padding-left: 16px;
+  border-left: 2px solid var(--background-modifier-border);
+  margin-left: 8px;
+}
+
+.n2o-settings-subsection {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+}
+
+.n2o-automation-card {
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  margin-bottom: 16px;
+}
+
+.n2o-connection-ok {
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-green);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-green) 8%, transparent);
+  color: var(--color-green);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.n2o-connection-warn {
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-red);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-red) 8%, transparent);
+  color: var(--color-red);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* ── Connection Cockpit ── */
+
+.n2o-connection-hub {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  background: var(--background-secondary);
+  padding: 16px 20px 0;
+  margin-bottom: 16px;
+}
+
+.n2o-connection-hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.n2o-connection-hub-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.n2o-connection-hub-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.n2o-connection-hub-dot.is-connected {
+  background: var(--color-green);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-green) 40%, transparent);
+}
+
+.n2o-connection-hub-dot.is-disconnected {
+  background: var(--text-faint);
+}
+
+.n2o-connection-hub-workspace {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.n2o-connection-hub-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.n2o-connection-hub-badge.is-lifetime {
+  background: color-mix(in srgb, var(--color-green) 15%, transparent);
+  color: var(--color-green);
+}
+
+.n2o-connection-hub-badge.is-pro {
+  background: color-mix(in srgb, var(--color-blue) 15%, transparent);
+  color: var(--color-blue);
+}
+
+.n2o-connection-hub-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.n2o-connection-hub-profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed var(--background-modifier-border);
+  padding: 10px 0;
+}
+
+.n2o-connection-hub-profile-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.n2o-connection-hub-profile-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.n2o-connection-hub-btn {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.n2o-connection-hub-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.n2o-connection-hub-disconnect {
+  color: var(--text-faint);
+  border-color: transparent;
+}
+
+.n2o-connection-hub-disconnect:hover {
+  color: var(--text-error);
+  border-color: color-mix(in srgb, var(--text-error) 30%, transparent);
+  background: color-mix(in srgb, var(--text-error) 8%, transparent);
+}
+
+.n2o-automation-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.n2o-automation-card p {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.n2o-automation-card ul {
+  margin: 4px 0 8px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.n2o-automation-card li {
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+.n2o-settings-subsection + .n2o-settings-subsection {
+  margin-top: 10px;
+}
+
+.n2o-automation-tip {
+  font-size: 14px;
+  color: var(--color-blue);
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-blue) 30%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-blue) 20%, transparent);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* ── Settings Header ── */
+.n2o-settings-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.n2o-settings-header-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-normal);
+}
+
+.n2o-settings-header-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ── Footer (shared across all tabs) ── */
+.n2o-settings-footer {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--background-modifier-border);
+  text-align: center;
+  padding-bottom: 32px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.n2o-settings-footer:hover {
+  opacity: 1;
+}
+
+.n2o-footer-spread {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.n2o-footer-tagline {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.n2o-footer-link {
+  display: inline-block;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.n2o-footer-link:hover {
+  background: var(--interactive-hover);
+  color: var(--text-normal);
+}
+
+.n2o-footer-legal {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 12px;
+}
+
+/* Dashboard sidebar: compact footer */
+.n2o-dashboard .n2o-footer-tagline {
+  font-size: 12px;
+}
+
+.n2o-dashboard .n2o-footer-link {
+  font-size: 11px;
+  padding: 3px 7px;
+}
+
+.n2o-dashboard .n2o-footer-legal {
+  font-size: 10px;
+}
+
+.n2o-dashboard .n2o-settings-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.n2o-footer-legal a {
+  color: var(--text-faint);
+  text-decoration: none;
+}
+
+.n2o-footer-legal a:hover {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+/* ── Settings System Health Hub ── */
+/* Health hub dot glows */
+.n2o-health-dot--ok {
+  background: var(--color-green) !important;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-green) 40%, transparent);
+}
+.n2o-health-dot--warn {
+  background: var(--color-yellow) !important;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-yellow) 40%, transparent);
+}
+.n2o-health-dot--error {
+  background: var(--color-red) !important;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-red) 40%, transparent);
+}
+
+.n2o-health-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-top: 1px dashed var(--background-modifier-border);
+  padding-top: 10px;
+  padding-bottom: 8px;
+}
+
+.n2o-health-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+
+.n2o-health-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.n2o-health-dot--ok { background: var(--color-green); }
+.n2o-health-dot--warn { background: var(--color-yellow); }
+.n2o-health-dot--error { background: var(--color-red); }
+.n2o-health-dot--off { background: var(--text-faint); opacity: 0.5; }
+
+.n2o-health-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-health-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.n2o-health-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.n2o-health-status {
+  text-align: right;
+}
+
+.n2o-health-status-text {
+  font-size: 13px;
+  font-weight: 500;
+  display: block;
+}
+
+.n2o-health-status--ok { color: var(--color-green); }
+.n2o-health-status--warn { color: var(--color-yellow); }
+.n2o-health-status--error { color: var(--color-red); }
+.n2o-health-status--off { color: var(--text-faint); }
+
+.n2o-health-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+}
+
+.n2o-health-action {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.n2o-health-action:hover {
+  background: var(--interactive-hover);
+  color: var(--text-normal);
+}
+
+/* ── Dashboard Health Pill (inline in header) ── */
+.n2o-dash-health-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  margin-right: 8px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+  white-space: nowrap;
+}
+
+.n2o-dash-health-pill:hover {
+  filter: brightness(1.15);
+}
+
+.n2o-dash-health-pill--ok {
+  background: color-mix(in srgb, var(--text-success, var(--color-green)) 12%, transparent);
+  color: var(--text-success, var(--color-green));
+}
+
+.n2o-dash-health-pill--warn {
+  background: color-mix(in srgb, var(--color-yellow) 14%, transparent);
+  color: var(--color-yellow);
+}
+
+.n2o-dash-health-pill--caution {
+  background: color-mix(in srgb, var(--color-orange, #e8912d) 14%, transparent);
+  color: var(--color-orange, #e8912d);
+}
+
+.n2o-dash-health-pill--error {
+  background: color-mix(in srgb, var(--text-error, var(--color-red)) 14%, transparent);
+  color: var(--text-error, var(--color-red));
+}
+
+.n2o-dash-health-pill-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.n2o-dash-health-pill-dot--ok { background: var(--text-success, var(--color-green)); }
+.n2o-dash-health-pill-dot--warn { background: var(--color-yellow); }
+.n2o-dash-health-pill-dot--caution { background: var(--color-orange, #e8912d); }
+.n2o-dash-health-pill-dot--error { background: var(--text-error, var(--color-red)); }
+
+.n2o-dash-health-pill-text {
+  line-height: 1;
+}
+
+.n2o-dash-health-chevron {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+/* Expandable detail panel — slide animation */
+.n2o-dash-health-panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+  transition: max-height 0.2s ease, opacity 0.15s ease, padding 0.2s ease;
+}
+
+.n2o-dash-health-panel.is-open {
+  max-height: 200px;
+  opacity: 1;
+  padding: 6px 0 8px 0;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Expanded body */
+.n2o-dash-health-body {
+  margin-top: 8px;
+  padding: 6px 4px;
+}
+
+/* Detail rows */
+.n2o-dash-health-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.n2o-dash-health-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.n2o-dash-health-dot--ok { background: var(--text-success, var(--color-green)); }
+.n2o-dash-health-dot--warn { background: var(--color-yellow); }
+.n2o-dash-health-dot--error { background: var(--text-error, var(--color-red)); }
+.n2o-dash-health-dot--off { background: var(--text-faint); opacity: 0.5; }
+
+.n2o-dash-health-label {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.n2o-dash-health-status {
+  flex: 1;
+  text-align: right;
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.n2o-dash-health-row--ok .n2o-dash-health-status { color: var(--text-success, var(--color-green)); }
+.n2o-dash-health-row--warn .n2o-dash-health-status { color: var(--color-yellow); }
+.n2o-dash-health-row--error .n2o-dash-health-status { color: var(--text-error, var(--color-red)); }
+.n2o-dash-health-row--off .n2o-dash-health-status { color: var(--text-faint); }
+
+.n2o-dash-health-action {
+  font-size: 11px;
+  color: var(--text-accent);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.n2o-dash-health-action:hover {
+  text-decoration: underline;
+}
+
+.n2o-settings-group--accent {
+  border-color: var(--interactive-accent);
+  border-width: 1.5px;
+}
+
+.n2o-realtime-desc {
+  margin-bottom: 8px;
+}
+
+.n2o-realtime-desc p {
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.n2o-automation-details {
+  margin: 12px 0;
+}
+
+.n2o-automation-info {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.n2o-automation-info p {
+  margin: 0 0 6px 0;
+}
+
+.n2o-automation-info ul {
+  margin: 4px 0 8px 0;
+  padding-left: 18px;
+}
+
+.n2o-automation-info li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+/* ── Settings Sections ─────────────────────────────── */
+
+.n2o-section {
+  margin: 12px 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--background-secondary);
+  position: relative;
+}
+
+.n2o-section[open] {
+  margin: 8px 0;
+}
+
+.n2o-section > summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  background: var(--background-secondary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.n2o-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.n2o-section > summary:hover {
+  background: var(--background-modifier-hover);
+}
+
+.n2o-section-chevron {
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.n2o-section[open] > summary .n2o-section-chevron {
+  transform: rotate(90deg);
+}
+
+.n2o-section-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-normal);
+  line-height: 1.3;
+}
+
+.n2o-section-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.n2o-section-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.n2o-section-badge-off {
+  background: color-mix(in srgb, var(--color-red) 30%, transparent);
+  color: var(--color-red);
+}
+
+.n2o-section-badge-on {
+  background: color-mix(in srgb, var(--color-yellow) 30%, transparent);
+  color: var(--color-yellow);
+}
+
+.n2o-section-badge-active {
+  background: color-mix(in srgb, var(--color-green) 30%, transparent);
+  color: var(--color-green);
+}
+
+.n2o-section-body {
+  padding: 8px 16px 16px 16px;
+  font-size: 14px;
+}
+
+/* Each control inside a section renders as its own sub-card, on the secondary
+   card background, so every tab reads as boxed cards. */
+.n2o-section-body .setting-item {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.n2o-section-body .setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.n2o-section-body .setting-item-description {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* On/off toggle in a section header. It is a sibling of <summary>, positioned
+   over the header's right side, so clicking it can't fold the section. */
+.n2o-section-header-toggle {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 2;
+}
+/* Reserve room on the right so the title/description don't run under the toggle. */
+.n2o-section--has-toggle > summary {
+  padding-right: 62px;
+}
+
+/* ── Automation Info Block ─────────────────────────── */
+
+.n2o-automation-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.n2o-automation-info p {
+  margin: 0 0 6px 0;
+}
+
+.n2o-automation-info p:last-child {
+  margin-bottom: 0;
+}
+
+.n2o-automation-info ul {
+  margin: 0 0 6px 0;
+  padding-left: 18px;
+}
+
+.n2o-automation-info li {
+  padding: 1px 0;
+}
+
+/* ── Filter Builder ────────────────────────────────── */
+
+.n2o-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.n2o-filter-row select {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+.n2o-filter-row input {
+  font-size: 13px;
+  padding: 4px 8px;
+  width: 120px;
+}
+
+.n2o-filter-remove {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.n2o-filter-remove:hover {
+  color: var(--text-error);
+}
+
+/* ── Property Mapper ───────────────────────────────── */
+
+.n2o-property-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.n2o-property-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.n2o-property-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.n2o-property-table input[type="text"] {
+  width: 100%;
+  font-size: 13px;
+  padding: 2px 6px;
+}
+
+
+/* ── What the full edition adds (#1975) ────────────────────
+   A list, not disabled controls. Nothing here is interactive except the
+   install button, so it must not look like settings the user could change. */
+.n2o-pro-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 12px;
+}
+
+.n2o-pro-feature-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.n2o-pro-feature-icon {
+  display: flex;
+  color: var(--text-accent);
+}
+
+.n2o-pro-feature-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.n2o-pro-feature-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.n2o-pro-feature-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 21px;
+}
+
+.n2o-pro-note {
+  margin-bottom: 8px;
+}
+
+/* The Pro tab's plain lists - deliberately not settings rows, so they cannot be
+   mistaken for controls the user could change. */
+.n2o-pro-lite-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.n2o-pro-lite-list li {
+  margin-bottom: 4px;
+}
