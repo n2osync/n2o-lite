@@ -23,6 +23,7 @@ import {
 } from '../domain/models/config-schema';
 import { ResetConfirmModal } from './reset-confirm-modal';
 import { NOTICE_SHORT, NOTICE_CRITICAL } from '../shared/constants';
+import { renderPaperRow } from './paper-promo';
 
 export { type TabName } from './settings-helpers';
 
@@ -451,6 +452,10 @@ export class N2OSettingTab extends PluginSettingTab {
   // ── Footer ──────────────────
 
   private renderFooter(container: HTMLElement): void {
+    // Above the footer rather than inside it: the footer sits at half opacity
+    // until it is hovered, which is right for legal links and wrong for this.
+    renderPaperRow(this.app, container);
+
     const footer = container.createDiv({ cls: 'n2o-settings-footer' });
 
     // Spread the Word

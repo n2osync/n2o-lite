@@ -929,3 +929,66 @@
 .n2o-pro-lite-list li {
   margin-bottom: 4px;
 }
+
+/* ── The N2O Paper row (above the footer, on every tab) ──
+ * Same shape as the Sync row inside N2O Paper Settings: the mark and the
+ * name, the line under it, the action on the right. The two products point
+ * at each other and a reader who has seen one recognises the other. It is
+ * NOT inside .n2o-settings-footer on purpose, which is half opacity until
+ * hover. */
+.n2o-paper-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--background-primary-alt);
+}
+
+.n2o-paper-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.n2o-paper-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+/* the mark is 2.12:1, so 18px tall sits on the name's cap height */
+.n2o-paper-row-mark {
+  height: 18px;
+  width: auto;
+  color: var(--text-normal);
+}
+
+.n2o-paper-row-name {
+  font-size: 1.05em;
+  font-weight: var(--font-semibold, 600);
+}
+
+.n2o-paper-row-body {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.n2o-paper-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+/* the action keeps its own line on a narrow tab rather than squeezing the text */
+@media (max-width: 620px) {
+  .n2o-paper-row {
+    flex-wrap: wrap;
+  }
+
+  .n2o-paper-row-actions {
+    margin-top: 4px;
+  }
+}
