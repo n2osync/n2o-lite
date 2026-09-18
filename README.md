@@ -93,6 +93,19 @@ Notion, N2O does not try to combine them and does not overwrite you. Your file
 stays as it is and Notion's version is written beside it as `<name>.conflict.md`,
 so you can compare the two and keep what you want.
 
+## N2O Paper, my free Obsidian theme
+
+Once your Notion pages are in Obsidian you have to read them somewhere, so I
+also make [N2O Paper](https://github.com/n2osync/n2o-paper): a light theme
+built for long reading, with cream sheets, callouts taped to the page and seven
+palettes taken from the traditional colours of Japan. It is free, MIT, and in
+the community theme list.
+
+Its 110 controls are rendered by
+[N2O Paper Settings](https://github.com/n2osync/n2o-paper-settings), also free
+and in the community plugin list. Neither one needs N2O, and N2O does not need
+either of them.
+
 ## Support
 
 - **Docs and guides**: [n2osync.com/docs](https://n2osync.com/docs)
