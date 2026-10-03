@@ -1,0 +1,413 @@
+/* N2O — Notion to Obsidian Sync Plugin Styles */
+
+/* Design system fonts — Inter (UI) + JetBrains Mono (numeric / paths).
+   Pulled from the N2O Dashboard design spec. Scoped to the dashboard
+   panel only so we don't override the user's theme elsewhere. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+.n2o-dashboard {
+  --n2o-font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --n2o-font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  font-family: var(--n2o-font-ui);
+
+  /*
+   * Responsive width — previously a 360px min-width floor forced the
+   * workspace-leaf wider, but right-side panes in Obsidian can be
+   * narrower than that (especially with a wider main editor) and the
+   * dashboard then clipped its direction chip, tier banner CTA, and
+   * sync action buttons. The min-width: 0 lets the dashboard collapse
+   * to its container; the container queries below stack/wrap whatever
+   * doesn't fit instead of overflowing. overflow-x: hidden is the
+   * belt-and-braces guard against any element that escapes anyway.
+   */
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  /* Container query setup so children can react to the dashboard's
+   * actual rendered width — viewport media queries don't see a narrow
+   * right pane on a wide screen. */
+  container-type: inline-size;
+  container-name: n2o-dash;
+}
+
+/* ── Narrow-pane fallbacks (Obsidian sidebar < 360px) ───────── */
+
+/* Direction chip: at narrow widths the inline "DIRECTION · chip" row
+ * runs out of horizontal space and the chip's desc gets clipped past
+ * the dashboard edge. Stack label above chip so each gets a full row. */
+@container n2o-dash (max-width: 360px) {
+  .n2o-dashboard .n2o-dash-hybrid-direction {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .n2o-dashboard .n2o-dash-hybrid-direction-chip {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+  }
+  /* Tier banner: at narrow widths the right-side CTA button gets
+   * pushed off-screen. Wrap the CTA below the body instead. */
+  .n2o-dashboard .n2o-dash-bottom-shell .n2o-dash-tier-banner {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .n2o-dashboard .n2o-dash-bottom-shell .n2o-dash-tier-banner .n2o-dash-tier-cta {
+    flex-basis: 100%;
+    text-align: center;
+  }
+  /* Sync action trio: idle state has Sync + Pull + Push side by side.
+   * On narrow panes the secondaries (Pull/Push) overflow. Allow wrap. */
+  .n2o-dashboard .n2o-dash-hybrid-cta-wrap.is-idle-trio {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .n2o-dashboard .n2o-dash-hybrid-cta-wrap.is-idle-trio .n2o-dash-hybrid-cta {
+    flex-basis: 100%;
+  }
+  /* Sync canceled pair / running pair: keep buttons side-by-side
+   * (they're shorter) but let them shrink. */
+  .n2o-dashboard .n2o-dash-hybrid-secondary-btn {
+    min-width: 0;
+  }
+  /* Scope card folder path: ellipsize long paths instead of overflowing. */
+  .n2o-dashboard .n2o-dash-hybrid-stat,
+  .n2o-dashboard .n2o-dash-scope-summary {
+    min-width: 0;
+  }
+}
+
+/* Very narrow (< 260px): the gauge ring itself starts to crowd. Shrink
+ * the hero and drop horizontal padding so content still reads. */
+@container n2o-dash (max-width: 260px) {
+  .n2o-dashboard .n2o-dash-hybrid-gauge-wrap {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .n2o-dashboard .n2o-dash-bottom-shell .n2o-dash-tier-banner {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+}
+
+/* Generic overflow protection: any direct child of the dashboard that
+ * wraps user content can't be wider than its parent. Pairs with the
+ * container queries above for content that should reflow regardless
+ * of breakpoint (long titles, long paths). */
+.n2o-dashboard .n2o-dash-hybrid-section,
+.n2o-dashboard .n2o-dash-hybrid-gauge-wrap,
+.n2o-dashboard .n2o-dash-bottom-shell {
+  max-width: 100%;
+  min-width: 0;
+}
+
+
+/* ── Multi-Column Layout (MCL) ───────────────────── */
+/* Renders Notion column_list blocks as side-by-side columns */
+
+.callout[data-callout="multi-column"] {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.callout[data-callout="multi-column"] > .callout-title {
+  display: none;
+}
+
+.callout[data-callout="multi-column"] > .callout-content {
+  display: flex;
+  gap: 1rem;
+}
+
+.callout[data-callout="multi-column"] > .callout-content > .callout {
+  flex: 1;
+}
+
+/* Strip chrome from nested column callouts — content only, no "Column ∨" header */
+.callout[data-callout="multi-column"] > .callout-content > .callout[data-callout="column"] {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.callout[data-callout="multi-column"] > .callout-content > .callout[data-callout="column"] > .callout-title {
+  display: none;
+}
+
+.callout[data-callout="multi-column"] > .callout-content > .callout[data-callout="column"] > .callout-content {
+  padding: 0;
+}
+
+/* Column width ratios from Notion (widthRatio passed as callout metadata |XX).
+   Every integer percentage 10-90 covered so no width falls through to flex:1. */
+.callout[data-callout="column"][data-callout-metadata="10"] { flex: 10 !important; }
+.callout[data-callout="column"][data-callout-metadata="11"] { flex: 11 !important; }
+.callout[data-callout="column"][data-callout-metadata="12"] { flex: 12 !important; }
+.callout[data-callout="column"][data-callout-metadata="13"] { flex: 13 !important; }
+.callout[data-callout="column"][data-callout-metadata="14"] { flex: 14 !important; }
+.callout[data-callout="column"][data-callout-metadata="15"] { flex: 15 !important; }
+.callout[data-callout="column"][data-callout-metadata="16"] { flex: 16 !important; }
+.callout[data-callout="column"][data-callout-metadata="17"] { flex: 17 !important; }
+.callout[data-callout="column"][data-callout-metadata="18"] { flex: 18 !important; }
+.callout[data-callout="column"][data-callout-metadata="19"] { flex: 19 !important; }
+.callout[data-callout="column"][data-callout-metadata="20"] { flex: 20 !important; }
+.callout[data-callout="column"][data-callout-metadata="21"] { flex: 21 !important; }
+.callout[data-callout="column"][data-callout-metadata="22"] { flex: 22 !important; }
+.callout[data-callout="column"][data-callout-metadata="23"] { flex: 23 !important; }
+.callout[data-callout="column"][data-callout-metadata="24"] { flex: 24 !important; }
+.callout[data-callout="column"][data-callout-metadata="25"] { flex: 25 !important; }
+.callout[data-callout="column"][data-callout-metadata="26"] { flex: 26 !important; }
+.callout[data-callout="column"][data-callout-metadata="27"] { flex: 27 !important; }
+.callout[data-callout="column"][data-callout-metadata="28"] { flex: 28 !important; }
+.callout[data-callout="column"][data-callout-metadata="29"] { flex: 29 !important; }
+.callout[data-callout="column"][data-callout-metadata="30"] { flex: 30 !important; }
+.callout[data-callout="column"][data-callout-metadata="31"] { flex: 31 !important; }
+.callout[data-callout="column"][data-callout-metadata="32"] { flex: 32 !important; }
+.callout[data-callout="column"][data-callout-metadata="33"] { flex: 33 !important; }
+.callout[data-callout="column"][data-callout-metadata="34"] { flex: 34 !important; }
+.callout[data-callout="column"][data-callout-metadata="35"] { flex: 35 !important; }
+.callout[data-callout="column"][data-callout-metadata="36"] { flex: 36 !important; }
+.callout[data-callout="column"][data-callout-metadata="37"] { flex: 37 !important; }
+.callout[data-callout="column"][data-callout-metadata="38"] { flex: 38 !important; }
+.callout[data-callout="column"][data-callout-metadata="39"] { flex: 39 !important; }
+.callout[data-callout="column"][data-callout-metadata="40"] { flex: 40 !important; }
+.callout[data-callout="column"][data-callout-metadata="41"] { flex: 41 !important; }
+.callout[data-callout="column"][data-callout-metadata="42"] { flex: 42 !important; }
+.callout[data-callout="column"][data-callout-metadata="43"] { flex: 43 !important; }
+.callout[data-callout="column"][data-callout-metadata="44"] { flex: 44 !important; }
+.callout[data-callout="column"][data-callout-metadata="45"] { flex: 45 !important; }
+.callout[data-callout="column"][data-callout-metadata="46"] { flex: 46 !important; }
+.callout[data-callout="column"][data-callout-metadata="47"] { flex: 47 !important; }
+.callout[data-callout="column"][data-callout-metadata="48"] { flex: 48 !important; }
+.callout[data-callout="column"][data-callout-metadata="49"] { flex: 49 !important; }
+.callout[data-callout="column"][data-callout-metadata="50"] { flex: 50 !important; }
+.callout[data-callout="column"][data-callout-metadata="51"] { flex: 51 !important; }
+.callout[data-callout="column"][data-callout-metadata="52"] { flex: 52 !important; }
+.callout[data-callout="column"][data-callout-metadata="53"] { flex: 53 !important; }
+.callout[data-callout="column"][data-callout-metadata="54"] { flex: 54 !important; }
+.callout[data-callout="column"][data-callout-metadata="55"] { flex: 55 !important; }
+.callout[data-callout="column"][data-callout-metadata="56"] { flex: 56 !important; }
+.callout[data-callout="column"][data-callout-metadata="57"] { flex: 57 !important; }
+.callout[data-callout="column"][data-callout-metadata="58"] { flex: 58 !important; }
+.callout[data-callout="column"][data-callout-metadata="59"] { flex: 59 !important; }
+.callout[data-callout="column"][data-callout-metadata="60"] { flex: 60 !important; }
+.callout[data-callout="column"][data-callout-metadata="61"] { flex: 61 !important; }
+.callout[data-callout="column"][data-callout-metadata="62"] { flex: 62 !important; }
+.callout[data-callout="column"][data-callout-metadata="63"] { flex: 63 !important; }
+.callout[data-callout="column"][data-callout-metadata="64"] { flex: 64 !important; }
+.callout[data-callout="column"][data-callout-metadata="65"] { flex: 65 !important; }
+.callout[data-callout="column"][data-callout-metadata="66"] { flex: 66 !important; }
+.callout[data-callout="column"][data-callout-metadata="67"] { flex: 67 !important; }
+.callout[data-callout="column"][data-callout-metadata="68"] { flex: 68 !important; }
+.callout[data-callout="column"][data-callout-metadata="69"] { flex: 69 !important; }
+.callout[data-callout="column"][data-callout-metadata="70"] { flex: 70 !important; }
+.callout[data-callout="column"][data-callout-metadata="71"] { flex: 71 !important; }
+.callout[data-callout="column"][data-callout-metadata="72"] { flex: 72 !important; }
+.callout[data-callout="column"][data-callout-metadata="73"] { flex: 73 !important; }
+.callout[data-callout="column"][data-callout-metadata="74"] { flex: 74 !important; }
+.callout[data-callout="column"][data-callout-metadata="75"] { flex: 75 !important; }
+.callout[data-callout="column"][data-callout-metadata="76"] { flex: 76 !important; }
+.callout[data-callout="column"][data-callout-metadata="77"] { flex: 77 !important; }
+.callout[data-callout="column"][data-callout-metadata="78"] { flex: 78 !important; }
+.callout[data-callout="column"][data-callout-metadata="79"] { flex: 79 !important; }
+.callout[data-callout="column"][data-callout-metadata="80"] { flex: 80 !important; }
+.callout[data-callout="column"][data-callout-metadata="81"] { flex: 81 !important; }
+.callout[data-callout="column"][data-callout-metadata="82"] { flex: 82 !important; }
+.callout[data-callout="column"][data-callout-metadata="83"] { flex: 83 !important; }
+.callout[data-callout="column"][data-callout-metadata="84"] { flex: 84 !important; }
+.callout[data-callout="column"][data-callout-metadata="85"] { flex: 85 !important; }
+.callout[data-callout="column"][data-callout-metadata="86"] { flex: 86 !important; }
+.callout[data-callout="column"][data-callout-metadata="87"] { flex: 87 !important; }
+.callout[data-callout="column"][data-callout-metadata="88"] { flex: 88 !important; }
+.callout[data-callout="column"][data-callout-metadata="89"] { flex: 89 !important; }
+.callout[data-callout="column"][data-callout-metadata="90"] { flex: 90 !important; }
+
+/* Images inside columns fill the column width (matches Notion behavior).
+   The |XXX pixel width from blockWidth is preserved in markdown for round-trip,
+   but CSS overrides the visual size so images scale with their column. */
+.callout[data-callout="column"] .image-embed {
+  width: 100%;
+}
+.callout[data-callout="column"] .image-embed img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.callout[data-callout="column"] img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Toggle Headings (heading-1/2/3 callouts) ───── */
+/* Strips callout chrome so toggle headings render as real H1/H2/H3 */
+/* Collapse arrow sits inline before the heading text (like Notion) */
+
+.callout[data-callout="heading-1"],
+.callout[data-callout="heading-2"],
+.callout[data-callout="heading-3"] {
+  border: none;
+  background: none;
+  padding: 0;
+  box-shadow: none;
+  mix-blend-mode: normal;
+}
+
+/* Hide the callout icon */
+.callout[data-callout="heading-1"] .callout-icon,
+.callout[data-callout="heading-2"] .callout-icon,
+.callout[data-callout="heading-3"] .callout-icon {
+  display: none;
+}
+
+/* Title bar: strip styling, align items to baseline */
+.callout[data-callout="heading-1"] .callout-title,
+.callout[data-callout="heading-2"] .callout-title,
+.callout[data-callout="heading-3"] .callout-title {
+  padding: 0;
+  background: none;
+  gap: 0;
+  align-items: baseline;
+}
+
+/* Collapse arrow: move BEFORE the heading text, align inline */
+.callout[data-callout="heading-1"] .callout-fold,
+.callout[data-callout="heading-2"] .callout-fold,
+.callout[data-callout="heading-3"] .callout-fold {
+  order: -1;
+  color: var(--text-faint);
+  padding: 0;
+  margin-right: 4px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* H1 heading text */
+.callout[data-callout="heading-1"] .callout-title-inner {
+  font-size: var(--h1-size, 2em);
+  font-weight: var(--bold-weight, 700);
+  color: var(--h1-color, var(--text-normal));
+  line-height: var(--h1-line-height, var(--line-height-tight));
+  font-style: var(--h1-style, normal);
+  font-variant: var(--h1-variant, normal);
+}
+
+/* H2 heading text */
+.callout[data-callout="heading-2"] .callout-title-inner {
+  font-size: var(--h2-size, 1.6em);
+  font-weight: var(--bold-weight, 700);
+  color: var(--h2-color, var(--text-normal));
+  line-height: var(--h2-line-height, var(--line-height-tight));
+  font-style: var(--h2-style, normal);
+  font-variant: var(--h2-variant, normal);
+}
+
+/* H3 heading text */
+.callout[data-callout="heading-3"] .callout-title-inner {
+  font-size: var(--h3-size, 1.25em);
+  font-weight: var(--bold-weight, 700);
+  color: var(--h3-color, var(--text-normal));
+  line-height: var(--h3-line-height, var(--line-height-tight));
+  font-style: var(--h3-style, normal);
+  font-variant: var(--h3-variant, normal);
+}
+
+/* ── Plain toggles ([!toggle] callouts) ───── */
+/* Same chrome-strip as the toggle headings above: Notion renders a plain
+   toggle as a bare chevron-plus-text row, not a tinted box. The chevron
+   moves BEFORE the text like Notion's; children indent under it. */
+.callout[data-callout="toggle"] {
+  border: none;
+  background: none;
+  padding: 0;
+  box-shadow: none;
+  mix-blend-mode: normal;
+}
+.callout[data-callout="toggle"] .callout-icon {
+  display: none;
+}
+.callout[data-callout="toggle"] > .callout-title {
+  padding: 0;
+  background: none;
+  gap: 0;
+  align-items: baseline;
+}
+.callout[data-callout="toggle"] > .callout-title .callout-fold {
+  order: -1;
+  color: var(--text-faint);
+  padding: 0;
+  margin-right: 4px;
+  flex-shrink: 0;
+  align-self: center;
+}
+/* Body text, not callout-accent bold */
+.callout[data-callout="toggle"] > .callout-title .callout-title-inner {
+  font-size: var(--font-text-size, 1em);
+  font-weight: var(--font-weight, 400);
+  color: var(--text-normal);
+}
+/* Children indent under the toggle, like Notion's ~24px */
+.callout[data-callout="toggle"] > .callout-content {
+  padding-left: 24px;
+}
+
+/* ── Notion-style disclosure triangle ───── */
+/* Measured from app.notion.com (2026-07-13): a 24x24 hover button with 4px
+   corners and pointer cursor, holding a ~13px SOLID triangle filled with the
+   text color, rotating with a 0.2s ease-out. Hide the lucide svg and draw
+   the triangle as a currentColor ::before; core rotates the SVG on collapse,
+   so the ::before carries its own rotation keyed on the same .is-collapsed
+   class. Applies to plain toggles and toggle headings alike. */
+.callout[data-callout="toggle"] .callout-fold,
+.callout[data-callout="heading-1"] .callout-fold,
+.callout[data-callout="heading-2"] .callout-fold,
+.callout[data-callout="heading-3"] .callout-fold {
+  color: var(--text-normal);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.callout[data-callout="toggle"] .callout-fold:hover,
+.callout[data-callout="heading-1"] .callout-fold:hover,
+.callout[data-callout="heading-2"] .callout-fold:hover,
+.callout[data-callout="heading-3"] .callout-fold:hover {
+  background-color: var(--background-modifier-hover);
+}
+.callout[data-callout="toggle"] .callout-fold svg,
+.callout[data-callout="heading-1"] .callout-fold svg,
+.callout[data-callout="heading-2"] .callout-fold svg,
+.callout[data-callout="heading-3"] .callout-fold svg {
+  display: none;
+}
+.callout[data-callout="toggle"] .callout-fold::before,
+.callout[data-callout="heading-1"] .callout-fold::before,
+.callout[data-callout="heading-2"] .callout-fold::before,
+.callout[data-callout="heading-3"] .callout-fold::before {
+  content: '';
+  display: block;
+  width: 13px;
+  height: 13px;
+  background: currentColor;
+  clip-path: polygon(15% 22%, 85% 22%, 50% 82%);
+  transition: transform 0.2s ease-out;
+}
+.callout[data-callout="toggle"] .callout-fold.is-collapsed::before,
+.callout[data-callout="heading-1"] .callout-fold.is-collapsed::before,
+.callout[data-callout="heading-2"] .callout-fold.is-collapsed::before,
+.callout[data-callout="heading-3"] .callout-fold.is-collapsed::before {
+  transform: rotate(-90deg);
+}
+
+/* Children content — normal rendering, slight indent */
+.callout[data-callout="heading-1"] .callout-content,
+.callout[data-callout="heading-2"] .callout-content,
+.callout[data-callout="heading-3"] .callout-content {
+  padding: 0;
+  color: var(--text-normal);
+}
+
