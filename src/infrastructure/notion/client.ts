@@ -34,25 +34,6 @@ const NOTION_VERSION = '2025-09-03';
 const REQUEST_TIMEOUT_MS = 30_000;
 /** Max OAuth-refresh retries per request. One refresh, one retry - a token that still 401s after refresh fails fast instead of looping. */
 const MAX_AUTH_RETRIES = 1;
-/** Timeout for file upload requests - longer than normal since uploads can be large. */
-const UPLOAD_TIMEOUT_MS = 120_000;
-
-/**
- * Notion's single_part upload mode caps at 20 MiB. Anything larger must be
- * uploaded via mode='multi_part' with N × /send calls (each carrying a
- * part_number) followed by POST /complete.
- *
- * See https://developers.notion.com/reference/create-a-file-upload.
- */
-const SINGLE_PART_LIMIT = 20 * 1024 * 1024;
-
-/**
- * Chunk size for multi_part uploads. Notion requires each part (except the
- * last) to be 5-20 MiB. 10 MiB keeps us well inside that window and yields
- * ≤ 100 parts for a 1 GB file (cap is 1,000 per Notion's send endpoint spec).
- */
-const MULTI_PART_CHUNK_SIZE = 10 * 1024 * 1024;
-
 /** Shape of the error object thrown by Obsidian's requestUrl on non-2xx responses. */
 interface RequestUrlError {
   status: number;
@@ -149,6 +130,14 @@ export interface TruncationInfo {
   detail: string;
 }
 
+
+/**
+ * The only HTTP methods Lite sends to Notion. Lite is pull-only: GET reads, and
+ * POST appears only because Notion reads `/search` and `/query` with POST.
+ * PATCH, PUT and DELETE are not representable, so a write cannot compile, and
+ * `scripts/check-network.mjs` refuses a POST to any other Notion path.
+ */
+export type NotionReadMethod = 'GET' | 'POST';
 export class NotionClient {
   private rateLimiter: RateLimiter;
 
@@ -224,7 +213,7 @@ export class NotionClient {
    */
   async request<T>(
     endpoint: string,
-    method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
+    method: NotionReadMethod = 'GET',
     body?: unknown,
     timeout: number = REQUEST_TIMEOUT_MS,
     apiVersion?: string,
@@ -280,7 +269,7 @@ export class NotionClient {
   /** One HTTP attempt, run inside the rate limiter. Throws NotionAuthRetryError on a refreshable 401. */
   private async attemptRequest<T>(
     endpoint: string,
-    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    method: NotionReadMethod,
     body: unknown,
     timeout: number,
     apiVersion?: string,
@@ -362,7 +351,7 @@ export class NotionClient {
   private async handleHttpError<T>(
     err: RequestUrlError,
     endpoint: string,
-    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    method: NotionReadMethod,
   ): Promise<T> {
     if (err.status === 429) throw extractRateLimitError(err);
 
@@ -391,42 +380,6 @@ export class NotionClient {
     return this.request<NotionPage>(`/pages/${pageId}`);
   }
 
-  /** Update a page's properties, and optionally its icon and cover. */
-  async updatePage(
-    pageId: string,
-    properties: unknown,
-    options?: { icon?: unknown; cover?: unknown },
-  ) {
-    const body: Record<string, unknown> = { properties };
-    if (options?.icon !== undefined) body.icon = options.icon;
-    if (options?.cover !== undefined) body.cover = options.cover;
-    return this.request(`/pages/${pageId}`, 'PATCH', body);
-  }
-
-  /** Create a new page under the given parent with properties and optional child blocks. */
-  async createPage(parent: unknown, properties: unknown, children?: unknown[]) {
-    return this.request('/pages', 'POST', { parent, properties, children });
-  }
-
-  /**
-   * Lock a page to prevent user edits during push.
-   * Sets `is_locked: true` on the page via the Update Page endpoint.
-   * Note: Locked pages show a lock icon in Notion - should be opt-in via settings.
-   */
-  async lockPage(pageId: string): Promise<void> {
-    await this.request(`/pages/${pageId}`, 'PATCH', { is_locked: true });
-  }
-
-  /** Unlock a previously locked page (remove the lock icon in Notion). */
-  async unlockPage(pageId: string): Promise<void> {
-    await this.request(`/pages/${pageId}`, 'PATCH', { is_locked: false });
-  }
-
-  /** Trash a page in Notion (moves to Notion's trash, recoverable for 30 days). */
-  async trashPage(pageId: string): Promise<void> {
-    await this.request(`/pages/${pageId}`, 'PATCH', { in_trash: true });
-  }
-
   // ── Blocks ─────────────────────────────────────────────
 
   /** Fetch one page of child blocks for the given block or page ID. */
@@ -439,42 +392,6 @@ export class NotionClient {
     return this.request<NotionPaginatedResponse<NotionBlock>>(
       `/blocks/${blockId}/children?${params}`,
     );
-  }
-
-  /**
-   * Append child blocks to a parent block or page.
-   * Uses the `position` parameter for precise placement:
-   * - `'start'` - insert at the beginning of the parent's children
-   * - `'end'` or omit - append at the end (default)
-   * - block ID string - insert after the specified block
-   */
-  async appendBlockChildren(
-    blockId: string,
-    children: unknown[],
-    position?: string,
-  ): Promise<NotionPaginatedResponse<NotionBlock>> {
-    const body: Record<string, unknown> = { children };
-    if (position === 'start') {
-      body.position = { type: 'start' };
-    } else if (position && position !== 'end') {
-      // Block ID - insert after that block
-      body.position = { type: 'after_block', after_block: { id: position } };
-    }
-    return this.request<NotionPaginatedResponse<NotionBlock>>(
-      `/blocks/${blockId}/children`,
-      'PATCH',
-      body,
-    );
-  }
-
-  /** Update a block's content or type-specific properties. */
-  async updateBlock(blockId: string, data: unknown) {
-    return this.request(`/blocks/${blockId}`, 'PATCH', data);
-  }
-
-  /** Archive (soft-delete) a block by ID. */
-  async deleteBlock(blockId: string) {
-    return this.request(`/blocks/${blockId}`, 'DELETE');
   }
 
   // ── Databases ──────────────────────────────────────────
@@ -493,7 +410,7 @@ export class NotionClient {
    *   resolve the block UUID to a real data_source_id. Passing 2022-06-28
    *   here drops `data_sources[]` from the response, which silently
    *   degrades downstream view discovery for inline child databases.
-   * - `/query` and PATCH: 2025-09-03 rejects /databases/{id}/query (the
+   * - `/query`: 2025-09-03 rejects /databases/{id}/query (the
    *   endpoint only exists on 2022-06-28), so callers explicitly pass
    *   `legacyFallbackVersion: '2022-06-28'` to keep that path working.
    *
@@ -503,7 +420,7 @@ export class NotionClient {
   private async databaseRequest<T>(
     databaseId: string,
     pathSuffix: string = '',
-    method: 'GET' | 'POST' | 'PATCH' = 'GET',
+    method: NotionReadMethod = 'GET',
     body?: unknown,
     legacyFallbackVersion?: string,
   ): Promise<T> {
@@ -620,25 +537,6 @@ export class NotionClient {
   }
 
   /**
-   * Update a database's property schema (e.g. rename properties).
-   * Routes through databaseRequest() for data_source/database ID compatibility.
-   * On API v2025-09-03, property updates go through /data_sources/{id} (PATCH).
-   * Falls back to /databases/{id} with older API version.
-   */
-  async updateDatabase(
-    databaseId: string,
-    properties: Record<string, unknown>,
-  ): Promise<NotionDatabase> {
-    return this.databaseRequest<NotionDatabase>(
-      databaseId,
-      '',
-      'PATCH',
-      { properties },
-      '2022-06-28',
-    );
-  }
-
-  /**
    * Query a database with optional filter, sorts, pagination cursor, and property filter.
    * Routes through databaseRequest() for data_source/database ID compatibility.
    * @param filterProperties - Array of Notion property IDs to return (reduces payload ~20-40% for wide DBs).
@@ -731,271 +629,6 @@ export class NotionClient {
   }
 
   // ── File Uploads ────────────────────────────────────────
-
-  /**
-   * Create a file upload placeholder on Notion (step 1 of 2).
-   * POST /v1/file_uploads - returns an upload object with ID.
-   * Requires API version 2025-09-03.
-   */
-  async createFileUpload(
-    fileName: string,
-    contentType: string,
-    numberOfParts?: number,
-  ): Promise<{ id: string }> {
-    return this.rateLimiter.enqueue(async () => {
-      const url = `${NOTION_API_BASE}/file_uploads`;
-      const body: Record<string, unknown> =
-        numberOfParts !== undefined
-          ? {
-              mode: 'multi_part',
-              filename: fileName,
-              content_type: contentType,
-              number_of_parts: numberOfParts,
-            }
-          : {
-              mode: 'single_part',
-              filename: fileName,
-              content_type: contentType,
-            };
-      try {
-        let timeoutId: number;
-        const response = await Promise.race([
-          this.httpFetch({
-            url,
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              'Notion-Version': NOTION_VERSION,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-            throwOnError: false,
-          }),
-          new Promise<never>((_, reject) => {
-            timeoutId = window.setTimeout(
-              () =>
-                reject(
-                  new Error(`File upload create timed out after ${UPLOAD_TIMEOUT_MS / 1000}s`),
-                ),
-              UPLOAD_TIMEOUT_MS,
-            );
-          }),
-        ]).finally(() => window.clearTimeout(timeoutId));
-        if (response.status >= 400) {
-          // throwOnError:false: surface Notion's actual error body, not a bodyless
-          // "no details". Shared with send/complete via notionErrorBody.
-          if (response.status === 429)
-            throw extractRateLimitError({ status: response.status, headers: response.headers });
-          throw new NotionApiError(
-            `File upload create failed (${response.status}): ${notionErrorBody(response)}`,
-            response.status,
-            (response.json as { code?: string } | undefined)?.code,
-          );
-        }
-        const result = response.json as { id?: string };
-        if (!result?.id) {
-          throw new NotionApiError('File upload create returned no ID', 0);
-        }
-        return result as { id: string };
-      } catch (error: unknown) {
-        if (error instanceof NotionApiError) throw error;
-        if (isRequestUrlError(error)) {
-          if (error.status === 429) throw extractRateLimitError(error);
-          throwApiError(error, 'File upload create failed');
-        }
-        throw error;
-      }
-    });
-  }
-
-  /**
-   * Send file data to Notion (step 2 of 2).
-   * POST /v1/file_uploads/{id}/send with multipart/form-data.
-   */
-  async sendFileUpload(
-    fileUploadId: string,
-    fileName: string,
-    data: ArrayBuffer,
-    contentType: string,
-    partNumber?: number,
-  ): Promise<void> {
-    return this.rateLimiter.enqueue(async () => {
-      const boundary = `----N2OBoundary${Date.now()}`;
-      const encoder = new TextEncoder();
-
-      // Build multipart/form-data body manually. Escape header-breaking chars in
-      // the quoted filename (a `"`, `\`, CR or LF would corrupt or inject the
-      // header) and add an RFC 5987 filename* so unicode names are properly
-      // encoded instead of relying on Notion tolerating raw UTF-8 (#1525).
-      const quotedName = fileName.replace(/[\r\n"\\]/g, '_');
-      const encodedName = encodeURIComponent(fileName);
-      const fileHeader = encoder.encode(
-        `--${boundary}\r\n` +
-          `Content-Disposition: form-data; name="file"; filename="${quotedName}"; filename*=UTF-8''${encodedName}\r\n` +
-          `Content-Type: ${contentType}\r\n\r\n`,
-      );
-      const partField =
-        partNumber !== undefined
-          ? encoder.encode(
-              `\r\n--${boundary}\r\n` +
-                `Content-Disposition: form-data; name="part_number"\r\n\r\n` +
-                `${partNumber}`,
-            )
-          : new Uint8Array(0);
-      const footer = encoder.encode(`\r\n--${boundary}--\r\n`);
-
-      const body = new Uint8Array(
-        fileHeader.length + data.byteLength + partField.length + footer.length,
-      );
-      body.set(fileHeader, 0);
-      body.set(new Uint8Array(data), fileHeader.length);
-      body.set(partField, fileHeader.length + data.byteLength);
-      body.set(footer, fileHeader.length + data.byteLength + partField.length);
-
-      try {
-        let timeoutId: number;
-        const response = await Promise.race([
-          this.httpFetch({
-            url: `${NOTION_API_BASE}/file_uploads/${fileUploadId}/send`,
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              'Notion-Version': NOTION_VERSION,
-              'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            },
-            body: body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength),
-            throwOnError: false,
-          }),
-          new Promise<never>((_, reject) => {
-            timeoutId = window.setTimeout(
-              () =>
-                reject(new Error(`File upload send timed out after ${UPLOAD_TIMEOUT_MS / 1000}s`)),
-              UPLOAD_TIMEOUT_MS,
-            );
-          }),
-        ]).finally(() => window.clearTimeout(timeoutId));
-        // throwOnError:false: surface Notion's REAL error body (e.g. "File size of
-        // 6.9 MiB exceeds the limit of 5 MiB", or "free plan does not support
-        // multipart") instead of the old bodyless "no details" that told the user
-        // nothing actionable. Same pattern createFileUpload already uses.
-        if (response.status >= 400) {
-          if (response.status === 429)
-            throw extractRateLimitError({ status: response.status, headers: response.headers });
-          throw new NotionApiError(
-            `File upload send failed (${response.status}): ${notionErrorBody(response)}`,
-            response.status,
-            (response.json as { code?: string } | undefined)?.code,
-          );
-        }
-      } catch (error: unknown) {
-        if (error instanceof NotionApiError) throw error;
-        if (isRequestUrlError(error)) {
-          if (error.status === 429) throw extractRateLimitError(error);
-          throwApiError(error, 'File upload send failed');
-        }
-        throw error;
-      }
-    });
-  }
-
-  /**
-   * Finalize a multi_part file upload after every part has been sent.
-   * Required by Notion before the upload object can be referenced in blocks.
-   */
-  async completeFileUpload(fileUploadId: string): Promise<void> {
-    return this.rateLimiter.enqueue(async () => {
-      try {
-        let timeoutId: number;
-        const response = await Promise.race([
-          this.httpFetch({
-            url: `${NOTION_API_BASE}/file_uploads/${fileUploadId}/complete`,
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              'Notion-Version': NOTION_VERSION,
-              'Content-Type': 'application/json',
-            },
-            body: '{}',
-            throwOnError: false,
-          }),
-          new Promise<never>((_, reject) => {
-            timeoutId = window.setTimeout(
-              () =>
-                reject(
-                  new Error(`File upload complete timed out after ${UPLOAD_TIMEOUT_MS / 1000}s`),
-                ),
-              UPLOAD_TIMEOUT_MS,
-            );
-          }),
-        ]).finally(() => window.clearTimeout(timeoutId));
-        if (response.status >= 400) {
-          if (response.status === 429)
-            throw extractRateLimitError({ status: response.status, headers: response.headers });
-          throw new NotionApiError(
-            `File upload complete failed (${response.status}): ${notionErrorBody(response)}`,
-            response.status,
-            (response.json as { code?: string } | undefined)?.code,
-          );
-        }
-      } catch (error: unknown) {
-        if (error instanceof NotionApiError) throw error;
-        if (isRequestUrlError(error)) {
-          if (error.status === 429) throw extractRateLimitError(error);
-          throwApiError(error, 'File upload complete failed');
-        }
-        throw error;
-      }
-    });
-  }
-
-  /**
-   * Upload a file to Notion and return the file_upload reference.
-   *
-   * Files ≤ 20 MiB take the simple single_part path (create + send).
-   * Larger files use multi_part: create with number_of_parts, send each
-   * chunk with its part_number, then call /complete.
-   */
-  async uploadFile(
-    fileName: string,
-    contentType: string,
-    data: ArrayBuffer,
-    pageId: string,
-  ): Promise<{ id: string }> {
-    log.info(
-      `Uploading file "${fileName}" (${contentType}, ${data.byteLength} bytes) for page ${pageId}`,
-    );
-
-    if (data.byteLength <= SINGLE_PART_LIMIT) {
-      const upload = await this.createFileUpload(fileName, contentType);
-      log.debug(`Created single_part upload ${upload.id}, sending ${data.byteLength} bytes`);
-      await this.sendFileUpload(upload.id, fileName, data, contentType);
-      return { id: upload.id };
-    }
-
-    const numberOfParts = Math.ceil(data.byteLength / MULTI_PART_CHUNK_SIZE);
-    if (numberOfParts > 1000) {
-      throw new NotionApiError(
-        `File "${fileName}" needs ${numberOfParts} parts at ${MULTI_PART_CHUNK_SIZE / (1024 * 1024)} MiB each - exceeds Notion's 1,000-part limit.`,
-        0,
-      );
-    }
-
-    const upload = await this.createFileUpload(fileName, contentType, numberOfParts);
-    log.debug(
-      `Created multi_part upload ${upload.id} (${numberOfParts} parts, ${data.byteLength} bytes)`,
-    );
-
-    for (let i = 0; i < numberOfParts; i++) {
-      const start = i * MULTI_PART_CHUNK_SIZE;
-      const end = Math.min(start + MULTI_PART_CHUNK_SIZE, data.byteLength);
-      const chunk = data.slice(start, end);
-      await this.sendFileUpload(upload.id, fileName, chunk, contentType, i + 1);
-    }
-
-    await this.completeFileUpload(upload.id);
-    log.debug(`Completed multi_part upload ${upload.id}`);
-    return { id: upload.id };
-  }
 
   // ── Helpers ────────────────────────────────────────────
 

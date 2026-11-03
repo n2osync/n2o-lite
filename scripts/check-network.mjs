@@ -16,8 +16,15 @@
  *  3. GITHUB OWNERSHIP. Only `src/plugin/pro-installer.ts` may name the GitHub
  *     API, so the upgrade fetch cannot spread into the sync path.
  *
- * What it does NOT check: runtime behaviour. It reads text. A host assembled at
- * runtime from fragments would not be caught by any of the three, and the Notion
+ *  4. PULL-ONLY. Lite never writes to Notion. No PATCH, PUT or DELETE literal
+ *     may appear in `src/**.ts`, and a POST may appear only where Notion reads
+ *     with POST (`/search`, `/query`), in the `NotionReadMethod` type, or in
+ *     `src/plugin/connection-manager.ts`, whose one POST goes to our own server's
+ *     sign-in poll. The type already refuses PATCH and DELETE at compile time;
+ *     this is what refuses a POST to a write endpoint such as `/pages`.
+ *
+ * What it does NOT check: runtime behaviour. It reads text. A host or a method
+ * assembled at runtime from fragments would not be caught by any of these, and the Notion
  * media URLs the API hands back at runtime are deliberately not knowable here.
  * Those are covered by review and by the media downloader's own SSRF guards, not
  * by this script.
@@ -144,6 +151,7 @@ function isAllowedHost(host) {
 function scan(file) {
   const text = readFileSync(file, 'utf8');
   const lower = text.toLowerCase();
+  checkPullOnly(file, text);
 
   for (const needle of FORBIDDEN) {
     if (lower.includes(needle)) failures.push(`${file}: contains "${needle}"`);
@@ -172,6 +180,30 @@ function scan(file) {
       `${file}: contains "api.github.com" - only ${GITHUB_API_OWNER} may use the GitHub API`,
     );
   }
+}
+
+/** The one source file whose POST goes to our server rather than to Notion. */
+const SERVER_POST_OWNER = 'src/plugin/connection-manager.ts';
+
+/** Pull-only: see check 4 in the header. Source files only; the bundle carries libraries. */
+function checkPullOnly(file, text) {
+  const normalized = file.split(String.fromCharCode(92)).join('/');
+  if (!normalized.endsWith('.ts')) return;
+  const lines = text.split('\n');
+  lines.forEach((line, i) => {
+    const write = line.match(/['"`](PATCH|PUT|DELETE)['"`]/);
+    if (write) {
+      failures.push(`${file}:${i + 1}: "${write[1]}" - N2O Lite is pull-only and never writes to Notion`);
+    }
+    if (!/['"`]POST['"`]/.test(line)) return;
+    if (normalized === SERVER_POST_OWNER) return;
+    if (/type NotionReadMethod\b/.test(line)) return;
+    const near = lines.slice(Math.max(0, i - 3), i + 2).join('\n');
+    if (/['"`]\/(search|query)['"`]/.test(near)) return;
+    failures.push(
+      `${file}:${i + 1}: POST to a Notion path other than /search or /query - N2O Lite is pull-only`,
+    );
+  });
 }
 
 function walk(dir) {
