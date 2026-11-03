@@ -123,14 +123,10 @@ export interface DashboardCallbacks {
   onSetNewsletterOptIn: (optIn: boolean) => void;
   /** Try to connect with a manual integration token. Validates + saves on success. */
   onValidateManualToken: (token: string) => Promise<{ success: boolean; detail: string }>;
-  /**
-   * Finish the OAuth connect from the code shown on the browser page (#2040).
-   * The same one-time exchange the `obsidian://` hand-off performs, for people
-   * whose Obsidian puts a confirmation dialog in front of that URL.
-   */
-  onSubmitConnectCode: (code: string) => Promise<{ success: boolean; detail: string }>;
+  /** Stop waiting for the browser: Cancel was pressed, or the waiting screen gave up. */
+  onCancelOAuth: () => void;
   /** Poll snapshot of connection state (for inline OAuth waiting screen).
-   *  `error` is set when the protocol handler rejects the callback. Consumers
+   *  `error` is set when the connect was refused or failed. Consumers
    *  should treat it as a one-shot: the plugin clears it after read. */
   onPollConnectionState: () => {
     hasToken: boolean;

@@ -24,19 +24,10 @@ export type ConnectStep = 'hero' | 'oauth-waiting' | 'manual-token' | 'success';
 /**
  * How long the waiting screen stays up before it gives up on the browser.
  *
- * Ten minutes, matching the server's parked-token TTL exactly. It used to be
- * two, which was sized for a hand-off that took a second: the browser fired an
- * `obsidian://` URL and the plugin redeemed it immediately. The paste-a-code
- * flow puts a PERSON in that window (#2040), reading ten characters, switching
- * applications and typing them, and two minutes is enough for that only if
- * nothing interrupts them. Bouncing somebody back to the start while they are
- * mid-paste, with a code that is still perfectly valid server-side, is a
- * countdown inventing a failure that had not happened.
- *
- * Longer than the server allows would be the opposite mistake: a screen still
- * hopefully counting down over a code the server threw away minutes ago. The
- * two numbers are the same number for that reason, and changing one means
- * changing `TOKEN_TTL_SECONDS` in the portal's `lib/oauth/sessions.ts`.
+ * Ten minutes, the server's parked-token TTL and the plugin's own poll window
+ * (`CONNECT_WINDOW_MS` in `connection-manager.ts`), so the screen never counts
+ * down over a connect the server has already thrown away. Changing it means
+ * changing `TOKEN_TTL_SECONDS` in the portal's `lib/oauth/sessions.ts` too.
  */
 const OAUTH_WINDOW_SECONDS = 600;
 
@@ -78,10 +69,6 @@ export class ConnectFlowRenderer {
   private tokenInputValue = '';
   private tokenErrorText: string | null = null;
   private tokenSubmitting = false;
-  /** The code from the browser page, as typed (#2040). Canonicalised on submit. */
-  private codeInputValue = '';
-  private codeErrorText: string | null = null;
-  private codeSubmitting = false;
   /** Error banner shown on hero (e.g. after OAuth timeout). Reset on re-entry from hero CTA. */
   private connectBannerText: string | null = null;
 
@@ -109,7 +96,7 @@ export class ConnectFlowRenderer {
 
   /**
    * Show an OAuth/connection error on the connect flow's hero. Called
-   * directly by the plugin's protocol handler so the user sees the
+   * directly by the plugin when a connect fails, so the user sees the
    * failure reason immediately - no waiting for the 1s poll tick.
    */
   showError(message: string): void {
@@ -159,9 +146,8 @@ export class ConnectFlowRenderer {
         this.oauthPreflightTimer = null;
       }
       this.oauthPreflightActive = false;
-      // The code and any complaint about it belong to this attempt only.
-      this.codeErrorText = null;
-      this.codeInputValue = '';
+      // Stop the plugin waiting on the browser. After a success it has already stopped.
+      this.host.getCallbacks()?.onCancelOAuth();
     }
     // Leaving manual-token: clear transient error
     if (this.connectStep === 'manual-token' && step !== 'manual-token') {
@@ -215,8 +201,8 @@ export class ConnectFlowRenderer {
     title.createSpan({ text: '.' });
 
     const body = this.oauthPreflightActive
-      ? "Opening Notion in your browser in a moment. Approve the connection there and you'll come back here automatically."
-      : "Notion is open in your browser. Approve the connection there and you'll come back here automatically.";
+      ? "Opening Notion in your browser in a moment. Approve the connection there and N2O finishes here on its own."
+      : "Notion is open in your browser. Approve the connection there and N2O finishes here on its own.";
     root.createDiv({ cls: 'n2o-dash-notconn-body', text: body });
   }
 
@@ -240,8 +226,6 @@ export class ConnectFlowRenderer {
       spinner.createSpan({ cls: 'n2o-spinner-dot' });
       spinner.createSpan({ cls: 'n2o-spinner-dot' });
       btn.createSpan({ text: 'Connecting\u2026' });
-
-      this.renderCodeEntry(root);
 
       // Cancel link on top, timeout below.
       const cancelRow = root.createDiv({ cls: 'n2o-dash-notconn-action-meta' });
@@ -327,74 +311,6 @@ export class ConnectFlowRenderer {
       e.preventDefault();
       this.connectBannerText = null;
       this.setStep('manual-token');
-    });
-  }
-
-  /**
-   * The code from the browser page, and the field to put it in (#2040).
-   *
-   * The scenario: somebody on Obsidian 1.13 or later approves N2O at Notion and
-   * the browser tries to hand off through `obsidian://`. Obsidian asks whether
-   * they really want to open an external application, they decline a dialog they
-   * did not expect in the middle of a login, and nothing else ever happens. The
-   * plugin sits on this waiting screen forever, they see no error, and the
-   * server holds tokens nobody collects.
-   *
-   * So the browser page now shows ten characters, and this is where they go. It
-   * lives INSIDE the waiting screen rather than behind a link, because the
-   * moment it is needed is the moment the person is looking at this screen with
-   * the code already on their other monitor. The automatic hand-off still works
-   * and still wins when it works; this is what is there when it does not.
-   *
-   * Same widgets as the manual-token form below, on purpose: one input, one
-   * error line, one button, Enter submits.
-   */
-  private renderCodeEntry(root: HTMLElement): void {
-    const wrap = root.createDiv({ cls: 'n2o-dash-connect-code' });
-    wrap.createDiv({
-      cls: 'n2o-dash-connect-sub',
-      text: 'Did your browser show a code instead? Paste it here.',
-    });
-
-    /**
-     * Declared before the input listener that enables it, because the listener
-     * has to run on every keystroke and the button is created further down the
-     * card. A re-render on each character would fight the caret.
-     */
-    let submitEl: HTMLButtonElement | null = null;
-
-    const input = wrap.createEl('input', {
-      cls: 'n2o-dash-token-input n2o-dash-code-input',
-      attr: { type: 'text', placeholder: 'ABCDE-FGHJK', spellcheck: 'false' },
-    });
-    input.value = this.codeInputValue;
-    input.addEventListener('input', () => {
-      this.codeInputValue = input.value;
-      if (submitEl) submitEl.disabled = this.codeSubmitting || !this.codeInputValue.trim();
-      if (this.codeErrorText) {
-        this.codeErrorText = null;
-        const err = wrap.querySelector('.n2o-dash-token-error');
-        if (err) err.remove();
-      }
-    });
-
-    if (this.codeErrorText) {
-      wrap.createDiv({ cls: 'n2o-dash-token-error', text: this.codeErrorText });
-    }
-
-    const submit = wrap.createEl('button', {
-      cls: 'n2o-dash-btn-primary n2o-dash-token-submit',
-    });
-    submitEl = submit;
-    submit.createSpan({ text: this.codeSubmitting ? 'Connecting\u2026' : 'Connect' });
-    submit.disabled = this.codeSubmitting || !this.codeInputValue.trim();
-    submit.addEventListener('click', () => void this.submitConnectCode());
-
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !submit.disabled) {
-        e.preventDefault();
-        void this.submitConnectCode();
-      }
     });
   }
 
@@ -586,7 +502,7 @@ export class ConnectFlowRenderer {
     const s = Math.max(0, this.oauthSecondsLeft);
     const min = Math.floor(s / 60);
     const sec = s % 60;
-    this.oauthCountdownEl.textContent = `This code expires in ${min}:${sec.toString().padStart(2, '0')}`;
+    this.oauthCountdownEl.textContent = `Waiting for your approval, ${min}:${sec.toString().padStart(2, '0')} left`;
   }
 
   /** Called when a token has been accepted (OAuth poll OR manual validation). */
@@ -608,43 +524,6 @@ export class ConnectFlowRenderer {
       this.connectStep = 'hero'; // reset for next time
       void this.host.refresh(); // falls through to State 2 (workspaceName is set)
     }, 2000);
-  }
-
-  /**
-   * Exchange the pasted code, and say what went wrong if it did not work.
-   *
-   * The countdown keeps running underneath. A person can paste a code, get it
-   * wrong by one character, and try again inside the same window without being
-   * thrown back to the start, which is the whole reason the window is now as
-   * long as the server's TTL.
-   *
-   * On success this walks the SAME celebration path the `obsidian://` callback
-   * does, because by that point the two flows are the same connect.
-   */
-  private async submitConnectCode(): Promise<void> {
-    if (this.codeSubmitting) return;
-    const cb = this.host.getCallbacks();
-    const raw = this.codeInputValue.trim();
-    if (!raw || !cb) return;
-    this.codeSubmitting = true;
-    this.codeErrorText = null;
-    this.host.render();
-    try {
-      const result = await cb.onSubmitConnectCode(raw);
-      this.codeSubmitting = false;
-      if (result.success) {
-        this.stopOAuthPoll();
-        this.codeInputValue = '';
-        await this.handleSuccess();
-      } else {
-        this.codeErrorText = result.detail || 'That code was not accepted.';
-        this.host.render();
-      }
-    } catch (e) {
-      this.codeSubmitting = false;
-      this.codeErrorText = getErrorMessage(e);
-      this.host.render();
-    }
   }
 
   private async submitManualToken(): Promise<void> {

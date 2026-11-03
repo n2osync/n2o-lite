@@ -2782,29 +2782,6 @@ body.theme-light .n2o-dashboard .n2o-dash-hybrid-scopecard {
   margin-top: 14px;
 }
 
-/* 1e - Paste-a-code entry on the OAuth waiting screen (#2040). Reuses the
-   manual-token input, error and submit styling; only the framing differs, so
-   there is one set of rules to keep looking right rather than two. */
-.n2o-dashboard .n2o-dash-connect-code {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--n2o-line-soft);
-  text-align: left;
-}
-
-.n2o-dashboard .n2o-dash-connect-code .n2o-dash-connect-sub {
-  margin-bottom: 10px;
-}
-
-/* Ten characters read off a screen, so centred and spaced to be checkable.
-   The upper-casing is display only; the field's value is what was typed. */
-.n2o-dashboard .n2o-dash-code-input {
-  text-align: center;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-size: 14px;
-}
-
 /* Auto-advance progress bar shown under the success-state CTA while
    the dashboard transitions to its main view. Kept narrow so it
    reads as a timer, not a section divider. */

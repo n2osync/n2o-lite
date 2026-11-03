@@ -56,7 +56,7 @@ import { getErrorMessage } from './shared/errors';
 import { DataWriteQueue } from './shared/data-write-queue';
 import { metaCommentHider } from './infrastructure/obsidian/meta-comment-hider';
 import { eventBus } from './shared/event-bus';
-import { NOTICE_ERROR, NOTICE_CRITICAL } from './shared/constants';
+import { NOTICE_CRITICAL } from './shared/constants';
 import { NoticeErrorBuffer } from './shared/notice-error-buffer';
 import { registerCommands } from './plugin/command-registration';
 import { registerContextMenus } from './plugin/context-menus';
@@ -67,8 +67,7 @@ import { UpgradeModal } from './ui/upgrade-modal';
 import {
   testConnection as testConnectionImpl,
   startOAuthFlow as startOAuthFlowImpl,
-  handleOAuthCallback as handleOAuthCallbackImpl,
-  handleConnectCode as handleConnectCodeImpl,
+  cancelOAuthFlow as cancelOAuthFlowImpl,
   disconnectOAuth as disconnectOAuthImpl,
 } from './plugin/connection-manager';
 
@@ -361,29 +360,6 @@ export default class N2OPlugin extends Plugin implements BootstrapHost, PluginHo
       // Register context menus (extracted)
       registerContextMenus(this);
 
-      // Register OAuth protocol handler (obsidian://n2o-oauth-callback?session=...)
-      this.registerObsidianProtocolHandler('n2o-oauth-callback', async (params) => {
-        const sessionId = params.session;
-        if (!sessionId) {
-          const msg = 'Missing session ID.';
-          this.lastOAuthError = msg;
-          new Notice(`N2O: Invalid OAuth callback - ${msg}`, NOTICE_ERROR);
-          this.dashboardManager.pushConnectError(msg);
-          return;
-        }
-        const result = await handleOAuthCallbackImpl(this, sessionId);
-        if (result.success) {
-          this.lastOAuthError = null;
-          // saveSettings() cascade handles component re-wiring + dashboard refresh
-          this.settingTab?.refreshIfVisible();
-        } else {
-          this.lastOAuthError = result.detail;
-          new Notice(`N2O: OAuth connection failed - ${result.detail}`, NOTICE_CRITICAL);
-          // Direct push to any open dashboards - no wait for next poll tick.
-          this.dashboardManager.pushConnectError(result.detail);
-        }
-      });
-
       // Status bar widget - kept as an internal sink for status updates from
       // sync commands, but NOT rendered in Obsidian's status bar.
       const detachedEl = createDiv();
@@ -638,17 +614,29 @@ export default class N2OPlugin extends Plugin implements BootstrapHost, PluginHo
     return testConnectionImpl(this);
   }
 
+  /**
+   * Open Notion's consent page and collect the connection when the person
+   * approves (`connection-manager.ts`). A success or failure lands where the
+   * dashboard's one-second check reads it; a cancel or a closed window says
+   * nothing, because the waiting screen reports those itself.
+   */
   startOAuthFlow(): void {
-    return startOAuthFlowImpl();
+    void startOAuthFlowImpl(this).then((result) => {
+      if (!result) return;
+      if (result.success) {
+        this.lastOAuthError = null;
+        // saveSettings() cascade handles component re-wiring + dashboard refresh
+        this.settingTab?.refreshIfVisible();
+        return;
+      }
+      this.lastOAuthError = result.detail;
+      new Notice(`N2O: Could not connect to Notion - ${result.detail}`, NOTICE_CRITICAL);
+      this.dashboardManager.pushConnectError(result.detail);
+    });
   }
 
-  async handleOAuthCallback(sessionId: string): Promise<{ success: boolean; detail: string }> {
-    return handleOAuthCallbackImpl(this, sessionId);
-  }
-
-  /** The paste-a-code half of the connect (#2040). Same exchange, typed instead of linked. */
-  async handleConnectCode(code: string): Promise<{ success: boolean; detail: string }> {
-    return handleConnectCodeImpl(this, code);
+  cancelOAuthFlow(): void {
+    cancelOAuthFlowImpl();
   }
 
   async disconnectOAuth(): Promise<void> {

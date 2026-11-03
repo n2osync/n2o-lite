@@ -17,6 +17,7 @@ import { normalizeNotionId } from '../domain/models/notion-id';
 import { createLogger } from '../shared/logger';
 import { LICENSE_SERVER_URL } from '../shared/constants';
 import { NotionApiError } from '../shared/errors';
+import { sha256Binary } from '../shared/hash';
 
 /** Shape of the OAuth token retrieval response from the license server. */
 export interface OAuthTokenResponse {
@@ -134,75 +135,84 @@ export async function testConnection(
 
 // ── OAuth Flow ──────────────────────────────────────────
 
-/**
- * Start the OAuth flow by opening the user's browser to the license server,
- * which redirects to Notion's authorization page.
- *
- * `?flow=code` asks for the paste-a-code success page instead of the one that
- * fires an `obsidian://` URL at the browser (#2040). Obsidian 1.13 and later
- * interrupt that URL with a confirmation dialog, and a person half way through
- * a login says no to a dialog they did not expect, at which point their tokens
- * sit parked on the server until they expire and the connect never finishes.
- *
- * The parameter is the version gate, and it points the right way round: the
- * build that knows how to accept a pasted code is the build that asks for one.
- * A server that switched everybody over would break every installed copy of
- * Lite at once, because none of them have anywhere to paste it.
- */
-export function startOAuthFlow(): void {
-  openExternalUrl(`${SERVER_BASE}/api/oauth/start?flow=code`);
+/** How often the waiting plugin asks whether the person has approved yet. Twenty a minute, under the token endpoint's thirty per IP. */
+const CONNECT_POLL_MS = 3000;
+/** Matches the server's parked-token TTL and the waiting screen's countdown. */
+const CONNECT_WINDOW_MS = 600_000;
+
+/** What one connect attempt ended with. `null` from the poll means it was cancelled or the window closed, which the waiting screen reports itself. */
+export interface ConnectResult {
+  success: boolean;
+  detail: string;
+  discoveredPages?: number;
+  discoveredDatabases?: number;
 }
 
-/**
- * Handle the OAuth callback from the obsidian:// protocol handler.
- * Retrieves tokens from the server and stores them in the active profile.
- */
-/**
- * Normalise an OAuth session id received via the obsidian:// protocol
- * handler. Returns the cleaned hex string when the shape is plausible,
- * or null when the input is too far gone to send to the server.
- *
- * Server emits a 64-char lowercase hex string (32 random bytes × 2 hex
- * digits) - see the server's /api/oauth/callback route. The obsidian://
- * hand-off has been observed to mutate the URL on some Win 11 + Edge
- * configurations (issue #1: trailing whitespace, partial percent-
- * encoding). Trim incidental whitespace and accept any hex shape
- * between 32 and 128 chars so a one-off browser quirk doesn't lock the
- * user out. The server's /api/oauth/token endpoint is the authoritative
- * validator - a session that doesn't exist in Redis (truly malformed,
- * expired, or replayed) will fail there with a clear error.
- */
-export function normaliseOAuthSession(input: string | null | undefined): string | null {
-  const trimmed = (input ?? '').trim();
-  return /^[a-f0-9]{32,128}$/i.test(trimmed) ? trimmed : null;
-}
+let activeConnect: AbortController | null = null;
 
 /**
- * Ten characters somebody read off the connect page and typed in here (#2040).
+ * Connect to Notion with nothing to click, copy or allow.
  *
- * The scenario: Obsidian 1.13 puts a confirmation dialog in front of the
- * `obsidian://` hand-off, people decline it, and their connect dies silently.
- * So the server can show a short code instead, and this is the field's guard.
+ * The plugin keeps a random secret and sends the browser only its SHA-256. The
+ * server parks the tokens under that hash once the person approves, and the
+ * plugin collects them by polling `/api/oauth/token` with the secret. Nothing
+ * travels back through the browser, so there is no `obsidian://` hand-off (a
+ * browser asks "Open Obsidian?" before one, with Cancel as the default) and no
+ * code to paste. Whoever reads the browser history sees only the hash.
  *
- * Crockford base32 without I, L, O or U, which is what the server mints
- * (`lib/oauth/code.ts`, ALPHABET), so there is no such thing here as reading a
- * 1 as an I or a 0 as an O. Those four letters are REJECTED rather than folded
- * onto their lookalikes: a code containing one did not come from us, and
- * quietly rewriting somebody's input into a different code would turn a clear
- * "check that code" into a lookup for a session that was never parked.
- *
- * Spaces and the display dash are stripped because a person pastes what they
- * see, and what they see is grouped `XXXXX-XXXXX`. Case is folded up because
- * the canonical form is upper and nobody types in caps.
- *
- * Deliberately NOT part of `normaliseOAuthSession`. That one guards the
- * `obsidian://` path, its 32-to-128 hex shape is what old success pages emit,
- * and widening it to admit codes would let a ten character string through to a
- * place that has only ever been handed hex.
+ * Starting again cancels the attempt before it.
  */
-export function normaliseConnectCode(input: string | null | undefined): string | null {
-  const stripped = (input ?? '').replace(/[\s-]/g, '').toUpperCase();
-  return /^[0-9A-HJ-KM-NP-TV-Z]{10}$/.test(stripped) ? stripped : null;
+export async function startOAuthFlow(plugin: ConnectionHost): Promise<ConnectResult | null> {
+  activeConnect?.abort();
+  const controller = new AbortController();
+  activeConnect = controller;
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  const secret = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  const key = await sha256Binary(new TextEncoder().encode(secret).buffer as ArrayBuffer);
+  openExternalUrl(`${SERVER_BASE}/api/oauth/start?flow=poll&key=${key}`);
+  try {
+    return await pollForConnection(plugin, secret, controller.signal);
+  } finally {
+    if (activeConnect === controller) activeConnect = null;
+  }
+}
+
+/** Stop waiting for the browser. The person pressed Cancel, or the waiting screen gave up. */
+export function cancelOAuthFlow(): void {
+  activeConnect?.abort();
+  activeConnect = null;
+}
+
+/** Resolve after `ms`, or as soon as `signal` aborts. */
+function waitOrAbort(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(resolve, ms);
+    signal.addEventListener('abort', () => (window.clearTimeout(timer), resolve()), { once: true });
+  });
+}
+
+async function pollForConnection(
+  plugin: ConnectionHost,
+  secret: string,
+  signal: AbortSignal,
+): Promise<ConnectResult | null> {
+  const deadline = Date.now() + CONNECT_WINDOW_MS;
+  /* A network failure is retried, not reported, but it is remembered: a window
+   * that closes because the internet was down says so, not just "it timed out". */
+  let lastTransient: string | null = null;
+  while (Date.now() < deadline) {
+    await waitOrAbort(CONNECT_POLL_MS, signal);
+    if (signal.aborted) return null;
+    const outcome = await redeemConnectSession(plugin, secret);
+    if (signal.aborted) return null;
+    if ('pending' in outcome) {
+      lastTransient = outcome.transient ?? null;
+      continue;
+    }
+    return outcome;
+  }
+  return lastTransient ? { success: false, detail: lastTransient } : null;
 }
 
 /** The server's own `error` string, when it sent one worth showing. */
@@ -257,77 +267,18 @@ function describeServerFailure(status: number, body: unknown): string {
   );
 }
 
-export async function handleOAuthCallback(
-  plugin: ConnectionHost,
-  sessionId: string,
-): Promise<{
-  success: boolean;
-  detail: string;
-  discoveredPages?: number;
-  discoveredDatabases?: number;
-}> {
-  const cleanSession = normaliseOAuthSession(sessionId);
-  if (cleanSession === null) {
-    const raw = (sessionId ?? '').trim();
-    log.warn(
-      `OAuth callback received an unexpected session shape ` +
-        `(length=${raw.length}, head=${JSON.stringify(raw.slice(0, 8))}). ` +
-        `Aborting before server round-trip. See issue #1.`,
-    );
-    return { success: false, detail: 'Invalid session ID format.' };
-  }
-
-  return redeemConnectSession(plugin, cleanSession);
-}
-
 /**
- * Finish the connect from a code the user pasted, rather than from a URL the
- * browser fired at us (#2040).
+ * Ask the server for the workspace parked under this secret's hash, and set the
+ * plugin up with it.
  *
- * Everything after this point is identical to the `obsidian://` path, and
- * deliberately so: it is the same one-time row, redeemed at the same endpoint,
- * by the same function below. Only the way the identifier reached Obsidian
- * differs. `avoiding-drift.md` #1 - two connect paths that both save profiles
- * and run discovery would be two places for that to be written slightly
- * differently, and the copy is always the one that rots.
- */
-export async function handleConnectCode(
-  plugin: ConnectionHost,
-  code: string,
-): Promise<{
-  success: boolean;
-  detail: string;
-  discoveredPages?: number;
-  discoveredDatabases?: number;
-}> {
-  const cleanCode = normaliseConnectCode(code);
-  if (cleanCode === null) {
-    return {
-      success: false,
-      detail: 'That code does not look right. It is 10 characters, like ABCDE-FGHJK.',
-    };
-  }
-
-  return redeemConnectSession(plugin, cleanCode);
-}
-
-/**
- * Trade a one-time identifier for the workspace, and set the plugin up with it.
- *
- * The single implementation behind both ways home. `cleanSession` is either a
- * 64 character session id out of an `obsidian://` link or a ten character
- * pasted code; the server's `/api/oauth/token` takes both in the same field and
- * both name the same parked row, so nothing below needs to know which it got.
+ * `pending` means "not yet": a 404 until the person approves, and a network
+ * blip or a 429, which the next poll retries rather than failing a connect the
+ * person is still in the middle of.
  */
 async function redeemConnectSession(
   plugin: ConnectionHost,
-  cleanSession: string,
-): Promise<{
-  success: boolean;
-  detail: string;
-  discoveredPages?: number;
-  discoveredDatabases?: number;
-}> {
+  pollSecret: string,
+): Promise<ConnectResult | { pending: true; transient?: string }> {
   /* Retrieve tokens from the licence server (one-time, deleted after retrieval).
    * client/version identify Lite connects server-side (free-tier user creation
    * instead of a trial); emailOptIn carries the connect-flow checkbox - the
@@ -347,7 +298,7 @@ async function redeemConnectSession(
       headers: { 'Content-Type': 'application/json' },
       throw: false,
       body: JSON.stringify({
-        session: cleanSession,
+        pollSecret,
         client: 'n2o-lite', // server license OAuth client id (wire value), not the plugin id
         version: plugin.version,
         emailOptIn: plugin.settings.newsletterOptIn === true,
@@ -356,13 +307,19 @@ async function redeemConnectSession(
   } catch (error) {
     /* Nothing came back at all: DNS, offline, TLS, timeout. Distinct from a
      * server that answered with a status, and it needs different advice. */
-    log.error('OAuth token request could not reach the server', error);
+    log.warn('OAuth token request could not reach the server', error);
     return {
-      success: false,
-      detail:
+      pending: true,
+      transient:
         'Could not reach the N2O server to finish signing in. Check your internet ' +
         'connection and try again, or connect with an internal integration token.',
     };
+  }
+
+  // 404 is "not approved yet"; 429 is the poll outrunning the limiter, and the next one waits.
+  if (response.status === 404) return { pending: true };
+  if (response.status === 429) {
+    return { pending: true, transient: describeServerFailure(response.status, response.json) };
   }
 
   if (response.status >= 400) {

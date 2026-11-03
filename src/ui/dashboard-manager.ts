@@ -54,8 +54,8 @@ export interface DashboardHost {
 
   // Connection flows
   startOAuthFlow(): void;
-  /** Redeem the short code from the connect page, the paste-a-code half of OAuth. */
-  handleConnectCode(code: string): Promise<{ success: boolean; detail: string }>;
+  /** Stop waiting for the browser during a connect. */
+  cancelOAuthFlow(): void;
   testConnection(): Promise<{ success: boolean; detail: string; workspaceName?: string }>;
 
   // Actions the dashboard delegates back to the plugin
@@ -472,15 +472,8 @@ export class DashboardManager implements DashboardPluginRef {
       onStartOAuth: () => {
         host.startOAuthFlow();
       },
-      /**
-       * The connect page's code, exchanged for the workspace. It runs the same
-       * redemption the protocol handler does, so a success here refreshes the
-       * dashboard exactly as a successful `obsidian://` callback would.
-       */
-      onSubmitConnectCode: async (code) => {
-        const result = await host.handleConnectCode(code);
-        if (result.success) this.refreshDashboards(true);
-        return result;
+      onCancelOAuth: () => {
+        host.cancelOAuthFlow();
       },
       getNewsletterOptIn: () => host.settings.newsletterOptIn === true,
       onSetNewsletterOptIn: (optIn) => {
