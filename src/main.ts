@@ -8,6 +8,7 @@
  * - plugin/connection-manager - connection test, OAuth
  */
 
+import { offerUpdateCheckOnce } from './plugin/update-check-offer';
 import { Plugin, Notice } from 'obsidian';
 import { N2OSettingTab } from './ui/settings-tab';
 import { getActiveProfile } from './domain/models/config-schema';
@@ -383,6 +384,7 @@ export default class N2OPlugin extends Plugin implements BootstrapHost, PluginHo
       this.app.workspace.onLayoutReady(async () => {
         await handleLayoutReady(this);
         await this.showUpgradeDialogOnce();
+        await offerUpdateCheckOnce(this);
       });
 
       log.info('N2O plugin loaded');
@@ -683,25 +685,25 @@ export default class N2OPlugin extends Plugin implements BootstrapHost, PluginHo
     const modal = new UpgradeModal(
       this.app,
       {
-      install: async (onProgress) => {
-        const result = await installProPlugin(this.app, onProgress);
-        if (result.enabled) {
-          // Hand the vault to the full edition once the modal has shown the
-          // success state. Order matters: Lite disables itself FIRST, then
-          // Pro enables, so the two onloads never overlap (shared obsidian://
-          // OAuth action, and shared UI surfaces). DISABLE, not uninstall -
-          // the plugin folder keeps Lite's settings and sync DBs on disk so
-          // N2O Sync's first-run import can adopt them; that import offers
-          // the actual removal. Raw window.setTimeout on purpose: the timer
-          // must survive this plugin's own unload.
-          const app = this.app;
-          window.setTimeout(() => {
-            modal.close();
-            void handOverToPro(app);
-          }, 4000);
-        }
-        return result;
-      },
+        install: async (onProgress) => {
+          const result = await installProPlugin(this.app, onProgress);
+          if (result.enabled) {
+            // Hand the vault to the full edition once the modal has shown the
+            // success state. Order matters: Lite disables itself FIRST, then
+            // Pro enables, so the two onloads never overlap (shared obsidian://
+            // OAuth action, and shared UI surfaces). DISABLE, not uninstall -
+            // the plugin folder keeps Lite's settings and sync DBs on disk so
+            // N2O Sync's first-run import can adopt them; that import offers
+            // the actual removal. Raw window.setTimeout on purpose: the timer
+            // must survive this plugin's own unload.
+            const app = this.app;
+            window.setTimeout(() => {
+              modal.close();
+              void handOverToPro(app);
+            }, 4000);
+          }
+          return result;
+        },
         getStatus: () => getProPluginStatus(this.app),
       },
       autoInstall,

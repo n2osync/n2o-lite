@@ -24,6 +24,10 @@
 import { Notice, requestUrl } from 'obsidian';
 import type { App } from 'obsidian';
 import { PRO_PLUGIN_ID, isProPluginActive } from './pro-guard';
+import {
+  SIGNED_RELEASE_FILES,
+  signedReleaseProblem,
+} from './release-signature';
 
 import { getErrorMessage } from '../shared/errors';
 import { createLogger } from '../shared/logger';
@@ -41,8 +45,14 @@ const RELEASE_API_URL = 'https://api.github.com/repos/n2osync/n2o/releases/lates
 /**
  * Every release asset the install needs. Missing any one aborts. Must equal
  * RELEASE_ASSETS in n2o/deploy.sh; a unit test in the n2o repo compares them.
+ * release-signature.json is checked, never installed (#512).
  */
-export const REQUIRED_ASSETS = ['main.js', 'manifest.json', 'styles.css'] as const;
+export const REQUIRED_ASSETS = [
+  'main.js',
+  'manifest.json',
+  'styles.css',
+  'release-signature.json',
+] as const;
 export type RequiredAsset = (typeof REQUIRED_ASSETS)[number];
 
 /**
@@ -225,6 +235,15 @@ export async function installProPlugin(
 
   onProgress('Verifying downloads...');
   verifyDownloads(files);
+  /* #512: signed by N2O, and not a byte changed since. A release that fails
+   * this is never installed, whatever else about it looks right. */
+  const problem = await signedReleaseProblem(files);
+  if (problem) {
+    throw new Error(
+      `Refusing to install this N2O Sync release: ${problem}. Nothing was installed. ` +
+        'Try again later, or install manually from n2osync.com.',
+    );
+  }
 
   // Only now, with every file verified, does anything touch disk.
   onProgress('Installing...');
@@ -234,7 +253,7 @@ export async function installProPlugin(
   if (!(await adapter.exists(proPluginDir))) {
     await adapter.mkdir(proPluginDir);
   }
-  for (const name of REQUIRED_ASSETS) {
+  for (const name of SIGNED_RELEASE_FILES) {
     await adapter.writeBinary(`${proPluginDir}/${name}`, files[name]);
   }
   log.info(

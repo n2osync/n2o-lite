@@ -169,3 +169,10 @@
 .n2o-notionify-token-input {
   width: 300px;
 }
+
+/* #512: the one-time offer to turn on Obsidian's own plugin-update check. */
+.n2o-update-offer-actions {
+  display: flex;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-2);
+}

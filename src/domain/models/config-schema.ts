@@ -180,6 +180,11 @@ export interface N2OSettings {
    * modal blocking the app, which is what gets a listed plugin reported.
    */
   upgradeDialogShown?: boolean;
+  /**
+   * True once Lite has asked whether to turn on Obsidian's own automatic
+   * plugin-update check (#512). Asked once, after the first successful pull.
+   */
+  updateCheckOffered?: boolean;
 
   // ── Update check ──
   /** ISO timestamp of last GitHub release check. */
@@ -510,6 +515,7 @@ export function parseN2OSettings(raw?: Record<string, unknown>): N2OSettings {
       typeof r.dismissedMetadataPrompt === 'boolean' ? r.dismissedMetadataPrompt : false,
     welcomeNoteWritten: typeof r.welcomeNoteWritten === 'boolean' ? r.welcomeNoteWritten : false,
     upgradeDialogShown: typeof r.upgradeDialogShown === 'boolean' ? r.upgradeDialogShown : false,
+    updateCheckOffered: typeof r.updateCheckOffered === 'boolean' ? r.updateCheckOffered : false,
 
     // Update check - preserved only when present so they stay optional (#1549).
     // Dropping dismissedUpdateVersion here made the update banner reappear every
